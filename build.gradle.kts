@@ -16,6 +16,7 @@ dependencies {
     implementation("com.google.inject:guice:4.2.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+    testImplementation("io.mockk:mockk:1.9.3")
 }
 
 application {
