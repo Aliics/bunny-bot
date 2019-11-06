@@ -2,18 +2,16 @@ package fish.eyebrow.bunnybot.handler
 
 import discord4j.core.DiscordClient
 import discord4j.core.event.domain.message.MessageCreateEvent
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 class DiscordClientWrapper(private val discordClient: DiscordClient) {
     companion object {
-        private val logger: Logger = LoggerFactory.getLogger(DiscordClientWrapper::class.java)
+        private const val INTRO_COMMAND = "!intro"
     }
 
     fun start() {
         val eventDispatcher = discordClient.eventDispatcher
         eventDispatcher.on(MessageCreateEvent::class.java).apply {
-            filter { event -> event.command("!intro") }.subscribe(IntroHandler)
+            filter { event -> event.command(INTRO_COMMAND) }.subscribe(IntroHandler)
         }.subscribe()
         discordClient.login().block()
     }
