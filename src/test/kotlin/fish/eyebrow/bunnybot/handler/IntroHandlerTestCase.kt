@@ -76,4 +76,20 @@ internal class IntroHandlerTestCase {
         assertNull(actualResultSet.getString("pronouns"))
         assertNull(actualResultSet.getString("extra"))
     }
+
+    @Test
+    internal fun `should populate database with sanitised new intro when given brand new intro with macro-like strings`() {
+        every { message.content } returns Optional.of("!intro name=Johnny,age=17,extra=hello :D")
+        introHandler.accept(messageCreateEvent)
+        val expectedId = 1L
+        val expectedName = "Johnny"
+        val expectedAge = "17"
+        val expectedExtra = "hello :D"
+        val actualResultSet = h2Connection.queryUsingResource("query_intro_table.sql").apply { next() }
+        assertEquals(expectedId, actualResultSet.getLong("id"))
+        assertEquals(expectedName, actualResultSet.getString("name"))
+        assertEquals(expectedAge, actualResultSet.getString("age"))
+        assertNull(actualResultSet.getString("pronouns"))
+        assertEquals(expectedExtra, actualResultSet.getString("extra"))
+    }
 }
