@@ -1,6 +1,6 @@
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.41"
-    application
+    id("application")
 }
 
 repositories {
@@ -15,12 +15,16 @@ dependencies {
     implementation("com.discord4j:discord4j-core:3.0.10")
     implementation("com.google.inject:guice:4.2.2")
     implementation("org.postgresql:postgresql:42.2.8")
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.5.2")
     testImplementation("io.mockk:mockk:1.9.3")
     testImplementation("com.h2database:h2:1.4.200")
 }
 
 application {
     mainClassName = "fish.eyebrow.bunnybot.AppKt"
+}
+
+val test by tasks.getting(Test::class) {
+    useJUnitPlatform()
 }
