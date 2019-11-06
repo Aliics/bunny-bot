@@ -20,5 +20,5 @@ class BunnyBotModule(private val commandLineArguments: CommandLineArguments) : A
 
     @Inject
     @Provides
-    fun createHandlerDelegate(discordClient: DiscordClient, echoHandler: EchoHandler) = DiscordClientWrapper(discordClient, echoHandler)
+    fun createDiscordClientWrapper(discordClient: DiscordClient, echoHandler: EchoHandler) = DiscordClientWrapper(discordClient, echoHandler)
 }
