@@ -11,6 +11,7 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -59,5 +60,20 @@ internal class IntroHandlerTestCase {
         assertEquals(expectedAge, actualResultSet.getString("age"))
         assertEquals(expectedPronouns, actualResultSet.getString("pronouns"))
         assertEquals(expectedExtra, actualResultSet.getString("extra"))
+    }
+
+    @Test
+    internal fun `should populate database with new intro when given brand new intro with only required fields`() {
+        every { message.content } returns Optional.of("!intro name=Johnny,age=17")
+        introHandler.accept(messageCreateEvent)
+        val expectedId = 1L
+        val expectedName = "Johnny"
+        val expectedAge = "17"
+        val actualResultSet = h2Connection.queryUsingResource("query_intro_table.sql").apply { next() }
+        assertEquals(expectedId, actualResultSet.getLong("id"))
+        assertEquals(expectedName, actualResultSet.getString("name"))
+        assertEquals(expectedAge, actualResultSet.getString("age"))
+        assertNull(actualResultSet.getString("pronouns"))
+        assertNull(actualResultSet.getString("extra"))
     }
 }

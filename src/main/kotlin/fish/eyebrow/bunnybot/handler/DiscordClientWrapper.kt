@@ -5,7 +5,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 
 class DiscordClientWrapper(private val discordClient: DiscordClient, private val introHandler: IntroHandler) {
     companion object {
-        private const val INTRO_COMMAND = "!intro"
+        internal const val INTRO_COMMAND = "!intro"
     }
 
     fun start() {
