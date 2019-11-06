@@ -13,6 +13,7 @@ dependencies {
     implementation("org.slf4j:slf4j-api:1.7.28")
     implementation("org.slf4j:slf4j-simple:1.7.28")
     implementation("com.discord4j:discord4j-core:3.0.10")
+    implementation("com.google.inject:guice:4.2.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 }
