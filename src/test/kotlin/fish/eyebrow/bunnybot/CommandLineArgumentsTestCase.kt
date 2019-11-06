@@ -1,8 +1,7 @@
 package fish.eyebrow.bunnybot
 
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 internal class CommandLineArgumentsTestCase {
     @Test
@@ -14,9 +13,26 @@ internal class CommandLineArgumentsTestCase {
     }
 
     @Test
-    fun `should not set token when no option is passed`() {
-        val args = emptyArray<String>()
-        val actualToken = CommandLineParser.parse(args).token
-        assertNull(actualToken)
+    fun `should populate dbUrl when passed with option`() {
+        val args = arrayOf("-db.url=jdbc:psql://0.0.0.0:5432/")
+        val expectedDbUrl = "jdbc:psql://0.0.0.0:5432/"
+        val actualDbUrl = CommandLineParser.parse(args).dbUrl
+        assertEquals(expectedDbUrl, actualDbUrl)
+    }
+
+    @Test
+    fun `should populate dbUser when passed with option`() {
+        val args = arrayOf("-db.user=root")
+        val expectedDbUser = "root"
+        val actualDbUser = CommandLineParser.parse(args).dbUser
+        assertEquals(expectedDbUser, actualDbUser)
+    }
+
+    @Test
+    fun `should populate dbPassword when passed with option`() {
+        val args = arrayOf("-db.password=password")
+        val expectedDbPassword = "password"
+        val actualDbPassword = CommandLineParser.parse(args).dbPassword
+        assertEquals(expectedDbPassword, actualDbPassword)
     }
 }

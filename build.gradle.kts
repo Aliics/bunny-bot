@@ -14,9 +14,11 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:1.7.28")
     implementation("com.discord4j:discord4j-core:3.0.10")
     implementation("com.google.inject:guice:4.2.2")
+    implementation("org.postgresql:postgresql:42.2.8")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     testImplementation("io.mockk:mockk:1.9.3")
+    testImplementation("com.h2database:h2:1.4.200")
 }
 
 application {

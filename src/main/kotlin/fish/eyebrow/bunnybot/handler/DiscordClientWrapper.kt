@@ -3,7 +3,7 @@ package fish.eyebrow.bunnybot.handler
 import discord4j.core.DiscordClient
 import discord4j.core.event.domain.message.MessageCreateEvent
 
-class DiscordClientWrapper(private val discordClient: DiscordClient) {
+class DiscordClientWrapper(private val discordClient: DiscordClient, private val introHandler: IntroHandler) {
     companion object {
         private const val INTRO_COMMAND = "!intro"
     }
@@ -11,7 +11,7 @@ class DiscordClientWrapper(private val discordClient: DiscordClient) {
     fun start() {
         val eventDispatcher = discordClient.eventDispatcher
         eventDispatcher.on(MessageCreateEvent::class.java).apply {
-            filter { event -> event.command(INTRO_COMMAND) }.subscribe(IntroHandler)
+            filter { event -> event.command(INTRO_COMMAND) }.subscribe(introHandler)
         }.subscribe()
         discordClient.login().block()
     }

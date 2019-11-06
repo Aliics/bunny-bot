@@ -8,6 +8,9 @@ import discord4j.core.DiscordClient
 import discord4j.core.DiscordClientBuilder
 import fish.eyebrow.bunnybot.CommandLineArguments
 import fish.eyebrow.bunnybot.handler.DiscordClientWrapper
+import fish.eyebrow.bunnybot.handler.IntroHandler
+import java.sql.Connection
+import java.sql.DriverManager
 
 class BunnyBotModule(private val commandLineArguments: CommandLineArguments) : AbstractModule() {
     @Inject
@@ -18,5 +21,16 @@ class BunnyBotModule(private val commandLineArguments: CommandLineArguments) : A
     @Inject
     @Provides
     @Singleton
-    fun createDiscordClientWrapper(discordClient: DiscordClient) = DiscordClientWrapper(discordClient)
+    fun createPostgresConnection(): Connection =
+            DriverManager.getConnection(commandLineArguments.dbUrl!!, commandLineArguments.dbUser!!, commandLineArguments.dbPassword!!)
+
+    @Inject
+    @Provides
+    @Singleton
+    fun createIntroHandler(connection: Connection) = IntroHandler(connection)
+
+    @Inject
+    @Provides
+    @Singleton
+    fun createDiscordClientWrapper(discordClient: DiscordClient, introHandler: IntroHandler) = DiscordClientWrapper(discordClient, introHandler)
 }
