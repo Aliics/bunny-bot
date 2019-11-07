@@ -142,14 +142,14 @@ internal class IntroHandlerTestCase {
     internal fun `should give a prompt to include to correct fields with the intro command when given none`() {
         val slot = slot<String>()
         val expectedHumouringPrompt = "Nothing to be added to your intro!"
-        val expectedListOfIntroHeader = "To add stuff do it in the following format. (_only name and age are required, any order_):"
-        val expectedListOfIntro = "name=YOUR NAME,age=YOUR AGE,pronouns=YOUR PRONOUNS,extra=YOUR EXTRA NOTES"
+        val expectedFormatOfIntroHeader = "To add stuff do it in the following format. (_only name and age are required, any order_):"
+        val expectedFormatOfIntro = "name=YOUR NAME,age=YOUR AGE,pronouns=YOUR PRONOUNS,extra=YOUR EXTRA NOTES"
         whenHandlerIsInvokedAsAuthorWithMessage(33332L, "!intro")
         verify { messageChannel.createMessage(capture(slot)) }
         val actualMessage = slot.captured
         assertTrue(actualMessage.contains(expectedHumouringPrompt))
-        assertTrue(actualMessage.contains(expectedListOfIntroHeader))
-        assertTrue(actualMessage.contains(expectedListOfIntro))
+        assertTrue(actualMessage.contains(expectedFormatOfIntroHeader))
+        assertTrue(actualMessage.contains(expectedFormatOfIntro))
     }
 
     private fun whenHandlerIsInvokedAsAuthorWithMessage(authorId: Long, messageContent: String) {

@@ -12,6 +12,9 @@ import java.util.function.Consumer
 
 class IntroHandler(private val dbConnection: Connection) : Consumer<MessageCreateEvent> {
     companion object {
+        private const val HUMOURING_PROMPT = "Nothing to be added to your intro!"
+        private const val FORMAT_OF_INTRO_HEADER = "To add stuff do it in the following format. (_only name and age are required, any order_):"
+        private const val FORMAT_OF_INTRO = "name=YOUR NAME,age=YOUR AGE,pronouns=YOUR PRONOUNS,extra=YOUR EXTRA NOTES"
         private val logger: Logger = LoggerFactory.getLogger(IntroHandler::class.java)
         private val commaRegex = ",".toRegex()
         private val equalsRegex = "=".toRegex()
@@ -25,10 +28,7 @@ class IntroHandler(private val dbConnection: Connection) : Consumer<MessageCreat
                 if (macroMap.isNotEmpty()) {
                     upsertIntro(macroMap, message)
                 } else {
-                    val humouringPrompt = "Nothing to be added to your intro!"
-                    val listOfIntroHeader = "To add stuff do it in the following format. (_only name and age are required, any order_):"
-                    val listOfIntro = "name=YOUR NAME,age=YOUR AGE,pronouns=YOUR PRONOUNS,extra=YOUR EXTRA NOTES"
-                    message.new("$humouringPrompt\n$listOfIntroHeader\n$listOfIntro")
+                    message.new("$HUMOURING_PROMPT\n$FORMAT_OF_INTRO_HEADER\n$FORMAT_OF_INTRO")
                 }
             } catch (e: Exception) {
                 message.new("A bizarre error has occurred updating your intro :alien:")
