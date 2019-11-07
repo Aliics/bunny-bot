@@ -12,16 +12,19 @@ class IntroHandler(private val dbConnection: Connection) : Consumer<MessageCreat
     }
 
     override fun accept(messageCreateEvent: MessageCreateEvent) {
-        messageCreateEvent.message.content.ifPresent { content ->
-            val macroMap = content.removePrefix(DiscordClientWrapper.INTRO_COMMAND)
-                .trimStart()
-                .split(commaRegex)
-                .filter { it.contains(equalsRegex) }
-                .associate {
-                    val (key, value) = it.split("=")
-                    return@associate ":($key)" to value
-                }
-            dbConnection.updateUsingResource("insert_intro_data.sql", macroMap)
+        messageCreateEvent.message.apply {
+            content.ifPresent { content ->
+                val macroMap = content.removePrefix(DiscordClientWrapper.INTRO_COMMAND)
+                    .trimStart()
+                    .split(commaRegex)
+                    .filter { it.contains(equalsRegex) }
+                    .associate {
+                        val (key, value) = it.split("=")
+                        return@associate ":($key)" to value
+                    }
+                dbConnection.updateUsingResource("insert_intro_data.sql", macroMap)
+                channel.block()?.createMessage("Great! I've got that all setup for you ${macroMap[":(name)"]}! :smile:")?.block()
+            }
         }
     }
 }
