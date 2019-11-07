@@ -30,17 +30,17 @@ class IntroHandler(private val dbConnection: Connection) : Consumer<MessageCreat
     }
 
     private fun setupMacroMap(message: Message, content: String): MutableMap<String, String> {
-        val rootMacroMap = mutableMapOf(":(discord_id)" to message.author.get().id.asString())
-        val paramMacroMap = content.removePrefix(DiscordClientWrapper.INTRO_COMMAND)
-            .trimStart()
-            .split(commaRegex)
-            .filter { it.contains(equalsRegex) }
-            .associate {
-                val (key, value) = it.split("=")
-                return@associate ":($key)" to value
-            }
-        rootMacroMap.putAll(paramMacroMap)
-        return rootMacroMap
+        return mutableMapOf(":(discord_id)" to message.author.get().id.asString()).apply {
+            val paramMacroMap = content.removePrefix(DiscordClientWrapper.INTRO_COMMAND)
+                .trimStart()
+                .split(commaRegex)
+                .filter { it.contains(equalsRegex) }
+                .associate {
+                    val (key, value) = it.split("=")
+                    return@associate ":($key)" to value
+                }
+            putAll(paramMacroMap)
+        }
     }
 
     private fun upsertIntro(rootMacroMap: MutableMap<String, String>, message: Message) {
