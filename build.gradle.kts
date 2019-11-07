@@ -1,6 +1,6 @@
 plugins {
     id("org.jetbrains.kotlin.jvm") version "1.3.41"
-    id("application")
+    id("com.github.johnrengelman.shadow") version "5.1.0"
 }
 
 repositories {
@@ -21,10 +21,16 @@ dependencies {
     testImplementation("com.h2database:h2:1.4.200")
 }
 
-application {
-    mainClassName = "fish.eyebrow.bunnybot.AppKt"
-}
-
 val test by tasks.getting(Test::class) {
     useJUnitPlatform()
+}
+
+val shadowJar = tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "fish.eyebrow.bunnybot.App"
+    }
+}
+
+tasks.build {
+    dependsOn(shadowJar)
 }
