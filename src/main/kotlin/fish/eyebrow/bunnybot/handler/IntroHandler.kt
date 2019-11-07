@@ -19,7 +19,7 @@ class IntroHandler(private val dbConnection: Connection) : Consumer<MessageCreat
                 .filter { it.contains(equalsRegex) }
                 .associate {
                     val (key, value) = it.split("=")
-                    return@associate ":$key" to value
+                    return@associate ":($key)" to value
                 }
             dbConnection.updateUsingResource("insert_intro_data.sql", macroMap)
         }
