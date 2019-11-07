@@ -4,6 +4,7 @@ import discord4j.core.DiscordClient
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.MessageChannel
 import discord4j.core.`object`.entity.User
+import discord4j.core.`object`.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import fish.eyebrow.bunnybot.sql.queryUsingResource
 import fish.eyebrow.bunnybot.sql.updateUsingResource
@@ -55,14 +56,17 @@ internal class IntroHandlerTestCase {
     @Test
     internal fun `should populate database with new intro when given brand new intro with all fields`() {
         every { message.content } returns Optional.of("!intro name=Alexander,age=20,pronouns=he/him,extra=likes pepsi and rabbits")
+        every { author.id } returns Snowflake.of(48293L)
         introHandler.accept(messageCreateEvent)
         val expectedId = 1L
+        val expectedDiscordId = 48293L
         val expectedName = "Alexander"
         val expectedAge = "20"
         val expectedPronouns = "he/him"
         val expectedExtra = "likes pepsi and rabbits"
         val actualResultSet = getFirstRowOfQuery()
         assertEquals(expectedId, actualResultSet.getLong("id"))
+        assertEquals(expectedDiscordId, actualResultSet.getLong("discord_id"))
         assertEquals(expectedName, actualResultSet.getString("name"))
         assertEquals(expectedAge, actualResultSet.getString("age"))
         assertEquals(expectedPronouns, actualResultSet.getString("pronouns"))
@@ -73,12 +77,15 @@ internal class IntroHandlerTestCase {
     @Test
     internal fun `should populate database with new intro when given brand new intro with only required fields`() {
         every { message.content } returns Optional.of("!intro name=Alfred,age=44")
+        every { author.id } returns Snowflake.of(88820L)
         introHandler.accept(messageCreateEvent)
         val expectedId = 1L
+        val expectedDiscordId = 88820L
         val expectedName = "Alfred"
         val expectedAge = "44"
         val actualResultSet = getFirstRowOfQuery()
         assertEquals(expectedId, actualResultSet.getLong("id"))
+        assertEquals(expectedDiscordId, actualResultSet.getLong("discord_id"))
         assertEquals(expectedName, actualResultSet.getString("name"))
         assertEquals(expectedAge, actualResultSet.getString("age"))
         assertNull(actualResultSet.getString("pronouns"))
@@ -89,13 +96,16 @@ internal class IntroHandlerTestCase {
     @Test
     internal fun `should populate database with sanitised new intro when given brand new intro with macro-like strings`() {
         every { message.content } returns Optional.of("!intro name=Larissa,age=19,extra=hello :D")
+        every { author.id } returns Snowflake.of(7777777L)
         introHandler.accept(messageCreateEvent)
         val expectedId = 1L
+        val expectedDiscordId = 7777777L
         val expectedName = "Larissa"
         val expectedAge = "19"
         val expectedExtra = "hello :D"
         val actualResultSet = getFirstRowOfQuery()
         assertEquals(expectedId, actualResultSet.getLong("id"))
+        assertEquals(expectedDiscordId, actualResultSet.getLong("discord_id"))
         assertEquals(expectedName, actualResultSet.getString("name"))
         assertEquals(expectedAge, actualResultSet.getString("age"))
         assertNull(actualResultSet.getString("pronouns"))
