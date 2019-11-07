@@ -3,15 +3,17 @@ package fish.eyebrow.bunnybot.handler
 import discord4j.core.DiscordClient
 import discord4j.core.event.domain.message.MessageCreateEvent
 
-class DiscordClientWrapper(private val discordClient: DiscordClient, private val introHandler: IntroHandler) {
+class DiscordClientWrapper(private val discordClient: DiscordClient, private val introHandler: IntroHandler, private val whoIsHandler: WhoIsHandler) {
     companion object {
         internal const val INTRO_COMMAND = "!intro"
+        internal const val WHOIS_COMMAND = "!whois"
     }
 
     fun start() {
         val eventDispatcher = discordClient.eventDispatcher
         eventDispatcher.on(MessageCreateEvent::class.java).apply {
             filter { event -> event.command(INTRO_COMMAND) }.subscribe(introHandler)
+            filter { event -> event.command(WHOIS_COMMAND) }.subscribe(whoIsHandler)
         }.subscribe()
         discordClient.login().block()
     }

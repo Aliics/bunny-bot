@@ -77,13 +77,28 @@ internal class WhoIsHandlerTestCase {
         val expectedDiscordId = "2839182"
         val expectedName = "Alfred"
         val expectedAge = "1029"
-        val expectedPronouns = "he/himw"
-        val expectedExtra = "eay?"
         val slot = slot<String>()
         givenExpectedInPostgresOfOnlyRequiredFields(expectedDiscordId, expectedName, expectedAge)
         every { message.userMentionIds } returns setOf(Snowflake.of(expectedDiscordId))
         whoIsHandler.accept(messageCreateEvent)
         verify { messageChannel.createMessage(capture(slot)) }
+        val actualMessage = slot.captured
+        assertTrue(actualMessage.contains("name: $expectedName"))
+        assertTrue(actualMessage.contains("age: $expectedAge"))
+        assertFalse(actualMessage.contains("pronouns"))
+        assertFalse(actualMessage.contains("extra"))
+    }
+
+    @Test
+    internal fun `should respond with only intro when one of the mentions has no intro`() {
+        val expectedDiscordId = "2839183"
+        val expectedName = "Candi"
+        val expectedAge = "-1"
+        val slot = slot<String>()
+        givenExpectedInPostgresOfOnlyRequiredFields(expectedDiscordId, expectedName, expectedAge)
+        every { message.userMentionIds } returns setOf(Snowflake.of(expectedDiscordId), Snowflake.of("1234"))
+        whoIsHandler.accept(messageCreateEvent)
+        verify(exactly = 1) { messageChannel.createMessage(capture(slot)) }
         val actualMessage = slot.captured
         assertTrue(actualMessage.contains("name: $expectedName"))
         assertTrue(actualMessage.contains("age: $expectedAge"))

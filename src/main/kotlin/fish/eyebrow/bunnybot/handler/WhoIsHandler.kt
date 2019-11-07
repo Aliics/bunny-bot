@@ -11,7 +11,8 @@ class WhoIsHandler(private val dbConnection: Connection) : Consumer<MessageCreat
         val message = messageCreateEvent.message
         message.userMentionIds.forEach { snowflake ->
             val singletonDiscordIdMap = mapOf(":(discord_id)" to snowflake.asString())
-            val result = dbConnection.queryUsingResource("full_query_intro_data_with_discord_id.sql", singletonDiscordIdMap).apply { next() }
+            val result = dbConnection.queryUsingResource("full_query_intro_data_with_discord_id.sql", singletonDiscordIdMap).apply { last() }
+            if (result.row < 1) return@forEach
             val nameField = takeIfValueNonNull(result, "name")
             val ageField = takeIfValueNonNull(result, "age")
             val pronounsField = takeIfValueNonNull(result, "pronouns")

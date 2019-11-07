@@ -9,6 +9,7 @@ import discord4j.core.DiscordClientBuilder
 import fish.eyebrow.bunnybot.CommandLineArguments
 import fish.eyebrow.bunnybot.handler.DiscordClientWrapper
 import fish.eyebrow.bunnybot.handler.IntroHandler
+import fish.eyebrow.bunnybot.handler.WhoIsHandler
 import java.sql.Connection
 import java.sql.DriverManager
 
@@ -27,10 +28,17 @@ class BunnyBotModule(private val commandLineArguments: CommandLineArguments) : A
     @Inject
     @Provides
     @Singleton
-    fun createIntroHandler(connection: Connection) = IntroHandler(connection)
+    fun createIntroHandler(connection: Connection): IntroHandler =
+            IntroHandler(connection)
 
     @Inject
     @Provides
     @Singleton
-    fun createDiscordClientWrapper(discordClient: DiscordClient, introHandler: IntroHandler) = DiscordClientWrapper(discordClient, introHandler)
+    fun createWhoIsHandler(connection: Connection): WhoIsHandler = WhoIsHandler(connection)
+
+    @Inject
+    @Provides
+    @Singleton
+    fun createDiscordClientWrapper(discordClient: DiscordClient, introHandler: IntroHandler, whoIsHandler: WhoIsHandler): DiscordClientWrapper =
+            DiscordClientWrapper(discordClient, introHandler, whoIsHandler)
 }
