@@ -103,5 +103,12 @@ internal class IntroHandlerTestCase {
         verify { messageChannel.createMessage("Great! I've got that all setup for you Larissa! :smile:") }
     }
 
+    @Test
+    internal fun `should not send a message if there is a problem updating query due to a lack of fields`() {
+        every { message.content } returns Optional.of("!intro name=Candi,extra=feed me >:O")
+        introHandler.accept(messageCreateEvent)
+        verify(exactly = 0) { messageChannel.createMessage(any<String>()) }
+    }
+
     private fun getFirstRowOfQuery() = h2Connection.queryUsingResource("query_intro_table.sql").apply { next() }
 }
