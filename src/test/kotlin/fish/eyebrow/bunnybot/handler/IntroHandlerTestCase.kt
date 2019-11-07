@@ -11,10 +11,12 @@ import fish.eyebrow.bunnybot.sql.updateUsingResource
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -138,8 +140,16 @@ internal class IntroHandlerTestCase {
 
     @Test
     internal fun `should give a prompt to include to correct fields with the intro command when given none`() {
+        val slot = slot<String>()
+        val expectedHumouringPrompt = "Nothing to be added to your intro!"
+        val expectedListOfIntroHeader = "To add stuff do it in the following format. (_only name and age are required, any order_):"
+        val expectedListOfIntro = "name=YOUR NAME,age=YOUR AGE,pronouns=YOUR PRONOUNS,extra=YOUR EXTRA NOTES"
         whenHandlerIsInvokedAsAuthorWithMessage(33332L, "!intro")
-        verify { messageChannel.createMessage("Nothing to be added to your intro!") }
+        verify { messageChannel.createMessage(capture(slot)) }
+        val actualMessage = slot.captured
+        assertTrue(actualMessage.contains(expectedHumouringPrompt))
+        assertTrue(actualMessage.contains(expectedListOfIntroHeader))
+        assertTrue(actualMessage.contains(expectedListOfIntro))
     }
 
     private fun whenHandlerIsInvokedAsAuthorWithMessage(authorId: Long, messageContent: String) {

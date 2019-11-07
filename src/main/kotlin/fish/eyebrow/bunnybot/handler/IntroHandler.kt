@@ -25,7 +25,10 @@ class IntroHandler(private val dbConnection: Connection) : Consumer<MessageCreat
                 if (macroMap.isNotEmpty()) {
                     upsertIntro(macroMap, message)
                 } else {
-                    message.new("Nothing to be added to your intro!")
+                    val humouringPrompt = "Nothing to be added to your intro!"
+                    val listOfIntroHeader = "To add stuff do it in the following format. (_only name and age are required, any order_):"
+                    val listOfIntro = "name=YOUR NAME,age=YOUR AGE,pronouns=YOUR PRONOUNS,extra=YOUR EXTRA NOTES"
+                    message.new("$humouringPrompt\n$listOfIntroHeader\n$listOfIntro")
                 }
             } catch (e: Exception) {
                 message.new("A bizarre error has occurred updating your intro :alien:")
