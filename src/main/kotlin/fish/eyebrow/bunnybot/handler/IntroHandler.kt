@@ -62,9 +62,7 @@ class IntroHandler(private val dbConnection: Connection) : Consumer<MessageCreat
         }
     }
 
-    private fun Message.new(content: String) {
-        channel.block()?.createMessage(content)?.block()
-    }
+    private fun Message.new(content: String) = channel.block()?.createMessage(content)?.block()
 
     private fun hasBeenPreviouslyStored(result: ResultSet) = result.let { it.last(); it.row > 0 }
 }

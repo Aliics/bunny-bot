@@ -55,15 +55,14 @@ internal class WhoIsHandlerTestCase {
 
     @Test
     internal fun `should respond with a message containing intro data for a mention that has an intro`() {
+        val slot = slot<String>()
         val expectedDiscordId = "7777777"
         val expectedName = "Larissa"
         val expectedAge = "19"
         val expectedPronouns = "she/her"
         val expectedExtra = "i love bunnies"
-        val slot = slot<String>()
         givenExpectedInPostgres(expectedDiscordId, expectedName, expectedAge, expectedPronouns, expectedExtra)
-        every { message.userMentionIds } returns setOf(Snowflake.of(expectedDiscordId))
-        whoIsHandler.accept(messageCreateEvent)
+        whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedDiscordId)))
         verify { messageChannel.createMessage(capture(slot)) }
         val actualMessage = slot.captured
         assertTrue(actualMessage.contains("name: $expectedName"))
@@ -74,13 +73,12 @@ internal class WhoIsHandlerTestCase {
 
     @Test
     internal fun `should only respond with the fields populated fields when only the required fields have values`() {
+        val slot = slot<String>()
         val expectedDiscordId = "2839182"
         val expectedName = "Alfred"
         val expectedAge = "1029"
-        val slot = slot<String>()
         givenExpectedInPostgresOfOnlyRequiredFields(expectedDiscordId, expectedName, expectedAge)
-        every { message.userMentionIds } returns setOf(Snowflake.of(expectedDiscordId))
-        whoIsHandler.accept(messageCreateEvent)
+        whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedDiscordId)))
         verify { messageChannel.createMessage(capture(slot)) }
         val actualMessage = slot.captured
         assertTrue(actualMessage.contains("name: $expectedName"))
@@ -91,19 +89,24 @@ internal class WhoIsHandlerTestCase {
 
     @Test
     internal fun `should respond with only intro when one of the mentions has no intro`() {
+        val slot = slot<String>()
         val expectedDiscordId = "2839183"
         val expectedName = "Candi"
         val expectedAge = "-1"
-        val slot = slot<String>()
         givenExpectedInPostgresOfOnlyRequiredFields(expectedDiscordId, expectedName, expectedAge)
-        every { message.userMentionIds } returns setOf(Snowflake.of(expectedDiscordId), Snowflake.of("1234"))
-        whoIsHandler.accept(messageCreateEvent)
+        whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedDiscordId), Snowflake.of("1234")))
         verify(exactly = 1) { messageChannel.createMessage(capture(slot)) }
         val actualMessage = slot.captured
         assertTrue(actualMessage.contains("name: $expectedName"))
         assertTrue(actualMessage.contains("age: $expectedAge"))
         assertFalse(actualMessage.contains("pronouns"))
         assertFalse(actualMessage.contains("extra"))
+    }
+
+    @Test
+    internal fun `should prompt to mention someone when no mentions are in content`() {
+        whenMessageEventIsCapturedWithSetOfMentions(emptySet())
+        verify { messageChannel.createMessage("Oh noes! No mention given with command!") }
     }
 
     private fun givenExpectedInPostgresOfOnlyRequiredFields(expectedDiscordId: String, expectedName: String, expectedAge: String) {
@@ -115,7 +118,13 @@ internal class WhoIsHandlerTestCase {
         h2Connection.updateUsingResource("insert_intro_data.sql", macroMap)
     }
 
-    private fun givenExpectedInPostgres(expectedDiscordId: String, expectedName: String, expectedAge: String, expectedPronouns: String, expectedExtra: String) {
+    private fun givenExpectedInPostgres(
+            expectedDiscordId: String,
+            expectedName: String,
+            expectedAge: String,
+            expectedPronouns: String,
+            expectedExtra: String
+    ) {
         val macroMap = mapOf(
             ":(discord_id)" to expectedDiscordId,
             ":(name)" to expectedName,
@@ -124,5 +133,10 @@ internal class WhoIsHandlerTestCase {
             ":(extra)" to expectedExtra
         )
         h2Connection.updateUsingResource("insert_intro_data.sql", macroMap)
+    }
+
+    private fun whenMessageEventIsCapturedWithSetOfMentions(mentions: Set<Snowflake>) {
+        every { message.userMentionIds } returns mentions
+        whoIsHandler.accept(messageCreateEvent)
     }
 }
