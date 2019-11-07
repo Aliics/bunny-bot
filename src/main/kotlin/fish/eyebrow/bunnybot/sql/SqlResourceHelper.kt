@@ -3,6 +3,7 @@ package fish.eyebrow.bunnybot.sql
 import java.sql.Connection
 import java.sql.ResultSet
 
+private const val NULL_VALUE = "null"
 private val macroRegex = ":\\([A-z]{1,255}\\)".toRegex()
 
 fun Connection.queryUsingResource(filePath: String, macroMap: Map<String, String> = emptyMap()): ResultSet {
@@ -25,7 +26,7 @@ private fun collectFilePathData(filePath: String, macroMap: Map<String, String>)
         }
     }
     for (macro in macros) {
-        val replacement = macroMap[macro]?.let { "'$it'" } ?: "null"
+        val replacement = macroMap[macro]?.let { "'$it'" } ?: NULL_VALUE
         mutableRawData = mutableRawData.replace(macro, replacement)
     }
     return mutableRawData

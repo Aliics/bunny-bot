@@ -8,18 +8,28 @@ import java.sql.ResultSet
 import java.util.function.Consumer
 
 class WhoIsHandler(private val dbConnection: Connection) : Consumer<MessageCreateEvent> {
+    companion object {
+        private const val QUERY_INTRO_WITH_DISCORD_ID = "full_query_intro_data_with_discord_id.sql"
+        private const val NO_MENTIONS = "Oh noes! No mention given with command!"
+        private const val DISCORD_ID_MACRO = ":(discord_id)"
+        private const val NAME_KEY = "name"
+        private const val AGE_KEY = "age"
+        private const val PRONOUNS_KEY = "pronouns"
+        private const val EXTRA_KEY = "extra"
+    }
+
     override fun accept(messageCreateEvent: MessageCreateEvent) {
         val message = messageCreateEvent.message
         message.userMentionIds.apply {
-            ifEmpty { message.new("Oh noes! No mention given with command!") }
+            ifEmpty { message.new(NO_MENTIONS) }
             forEach { snowflake ->
-                val singletonDiscordIdMap = mapOf(":(discord_id)" to snowflake.asString())
-                val result = dbConnection.queryUsingResource("full_query_intro_data_with_discord_id.sql", singletonDiscordIdMap).apply { last() }
+                val singletonDiscordIdMap = mapOf(DISCORD_ID_MACRO to snowflake.asString())
+                val result = dbConnection.queryUsingResource(QUERY_INTRO_WITH_DISCORD_ID, singletonDiscordIdMap).apply { last() }
                 if (result.row < 1) return@forEach
-                val nameField = takeIfValueNonNull(result, "name")
-                val ageField = takeIfValueNonNull(result, "age")
-                val pronounsField = takeIfValueNonNull(result, "pronouns")
-                val extraField = takeIfValueNonNull(result, "extra")
+                val nameField = takeIfValueNonNull(result, NAME_KEY)
+                val ageField = takeIfValueNonNull(result, AGE_KEY)
+                val pronounsField = takeIfValueNonNull(result, PRONOUNS_KEY)
+                val extraField = takeIfValueNonNull(result, EXTRA_KEY)
                 message.new("$nameField\n$ageField\n$pronounsField\n$extraField")
             }
         }
