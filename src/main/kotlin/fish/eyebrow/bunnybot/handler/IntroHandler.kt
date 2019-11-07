@@ -22,15 +22,20 @@ class IntroHandler(private val dbConnection: Connection) : Consumer<MessageCreat
         message.content.ifPresent { content ->
             try {
                 val macroMap = setupMacroMap(message, content)
-                upsertIntro(macroMap, message)
+                if (macroMap.isNotEmpty()) {
+                    upsertIntro(macroMap, message)
+                } else {
+                    message.new("Nothing to be added to your intro!")
+                }
             } catch (e: Exception) {
+                message.new("A bizarre error has occurred updating your intro :alien:")
                 logger.error("An exception occurred when updating postgres:", e)
             }
         }
     }
 
-    private fun setupMacroMap(message: Message, content: String): MutableMap<String, String> {
-        return mutableMapOf(":(discord_id)" to message.author.get().id.asString()).apply {
+    private fun setupMacroMap(message: Message, content: String): Map<String, String> {
+        return mutableMapOf(":(discord_id)" to message.author.get().id.asString()).let { macroMap ->
             val paramMacroMap = content.removePrefix(DiscordClientWrapper.INTRO_COMMAND)
                 .trimStart()
                 .split(commaRegex)
@@ -39,19 +44,23 @@ class IntroHandler(private val dbConnection: Connection) : Consumer<MessageCreat
                     val (key, value) = it.split("=")
                     return@associate ":($key)" to value
                 }
-            putAll(paramMacroMap)
+            return@let if (paramMacroMap.isNotEmpty()) macroMap.apply { putAll(paramMacroMap) } else emptyMap()
         }
     }
 
-    private fun upsertIntro(rootMacroMap: MutableMap<String, String>, message: Message) {
-        val storedIntro = dbConnection.queryUsingResource("full_query_intro_data_with_discord_id.sql", rootMacroMap)
+    private fun upsertIntro(macroMap: Map<String, String>, message: Message) {
+        val storedIntro = dbConnection.queryUsingResource("full_query_intro_data_with_discord_id.sql", macroMap)
         if (!hasBeenPreviouslyStored(storedIntro)) {
-            dbConnection.updateUsingResource("insert_intro_data.sql", rootMacroMap)
-            message.channel.block()?.createMessage("Great! I've got that all setup for you, ${rootMacroMap[":(name)"]}! :smile:")?.block()
+            dbConnection.updateUsingResource("insert_intro_data.sql", macroMap)
+            message.new("Great! I've got that all setup for you, ${macroMap[":(name)"]}! :smile:")
         } else {
-            dbConnection.updateUsingResource("update_intro_data.sql", rootMacroMap)
-            message.channel.block()?.createMessage("Awesome! I've overwritten your previous intro, ${rootMacroMap[":(name)"]}! :smile:")?.block()
+            dbConnection.updateUsingResource("update_intro_data.sql", macroMap)
+            message.new("Awesome! I've overwritten your previous intro, ${macroMap[":(name)"]}! :smile:")
         }
+    }
+
+    private fun Message.new(content: String) {
+        channel.block()?.createMessage(content)?.block()
     }
 
     private fun hasBeenPreviouslyStored(result: ResultSet) = result.let { it.last(); it.row > 0 }

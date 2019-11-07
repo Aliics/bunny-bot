@@ -111,10 +111,10 @@ internal class IntroHandlerTestCase {
     }
 
     @Test
-    internal fun `should not send a message if there is a problem updating query due to a lack of fields`() {
+    internal fun `should respond with an error message when no discord id is attached`() {
         every { message.content } returns Optional.of("!intro name=Candi,extra=feed me >:O")
         introHandler.accept(messageCreateEvent)
-        verify(exactly = 0) { messageChannel.createMessage(any<String>()) }
+        verify { messageChannel.createMessage("A bizarre error has occurred updating your intro :alien:") }
     }
 
     @Test
@@ -134,6 +134,12 @@ internal class IntroHandlerTestCase {
         assertNull(actualResultSet.getString("pronouns"))
         assertEquals(expectedExtra, actualResultSet.getString("extra"))
         verify { messageChannel.createMessage("Awesome! I've overwritten your previous intro, Oliver! :smile:") }
+    }
+
+    @Test
+    internal fun `should give a prompt to include to correct fields with the intro command when given none`() {
+        whenHandlerIsInvokedAsAuthorWithMessage(33332L, "!intro")
+        verify { messageChannel.createMessage("Nothing to be added to your intro!") }
     }
 
     private fun whenHandlerIsInvokedAsAuthorWithMessage(authorId: Long, messageContent: String) {
