@@ -23,7 +23,10 @@ class BunnyBotModule(private val commandLineArguments: CommandLineArguments) : A
     @Provides
     @Singleton
     fun createPostgresConnection(): Connection =
-            DriverManager.getConnection(commandLineArguments.dbUrl!!, commandLineArguments.dbUser!!, commandLineArguments.dbPassword!!)
+            if (commandLineArguments.dbUser == null || commandLineArguments.dbPassword == null)
+                DriverManager.getConnection(commandLineArguments.dbUrl!!)
+            else
+                DriverManager.getConnection(commandLineArguments.dbUrl!!, commandLineArguments.dbUser, commandLineArguments.dbPassword)
 
     @Inject
     @Provides
