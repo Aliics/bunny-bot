@@ -21,7 +21,7 @@ class WhoIsHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
             ifEmpty { message.new(NO_MENTIONS) }
             forEach { snowflake ->
                 val discordId = snowflake.asString()
-                val result = introDao.findIntroWithDiscordId(discordId).apply { last() }
+                val result = introDao.findIntroWithDiscordId(discordId)
                 if (result.row < 1) return@forEach
                 val nameField = takeIfValueNonNull(result, NAME_KEY)
                 val ageField = takeIfValueNonNull(result, AGE_KEY)

@@ -5,7 +5,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import fish.eyebrow.bunnybot.IntroDao
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.sql.ResultSet
 import java.util.function.Consumer
 
 class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent> {
@@ -28,7 +27,7 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
             try {
                 val introMap = setupIntroFieldMap(message, content)
                 if (introMap.isNotEmpty()) {
-                    upsertIntro(introMap, message)
+                    upsertIntroWithMessage(introMap, message)
                 } else {
                     message.new("$HUMOURING_PROMPT\n$FORMAT_OF_INTRO_HEADER\n$FORMAT_OF_INTRO")
                 }
@@ -53,10 +52,10 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
         }
     }
 
-    private fun upsertIntro(introMap: Map<String, String>, message: Message) {
+    private fun upsertIntroWithMessage(introMap: Map<String, String>, message: Message) {
         val storedIntro = introDao.findIntroWithDiscordId(introMap["discordId"])
         val introName = introMap["name"]
-        if (!hasBeenPreviouslyStored(storedIntro)) {
+        if (storedIntro.row > 0) {
             introDao.insertIntro(introMap)
             message.new("Great! I've got that all setup for you, $introName! :smile:")
         } else {
@@ -66,6 +65,4 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
     }
 
     private fun Message.new(content: String) = channel.block()?.createMessage(content)?.block()
-
-    private fun hasBeenPreviouslyStored(result: ResultSet) = result.let { it.last(); it.row > 0 }
 }
