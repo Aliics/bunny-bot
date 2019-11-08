@@ -1,1 +1,0 @@
-SELECT * FROM intro WHERE discord_id = :(discord_id);

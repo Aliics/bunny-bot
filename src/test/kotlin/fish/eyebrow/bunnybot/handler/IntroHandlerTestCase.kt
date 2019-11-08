@@ -6,8 +6,8 @@ import discord4j.core.`object`.entity.MessageChannel
 import discord4j.core.`object`.entity.User
 import discord4j.core.`object`.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
-import fish.eyebrow.bunnybot.sql.queryUsingResource
-import fish.eyebrow.bunnybot.sql.updateUsingResource
+import fish.eyebrow.bunnybot.IntroDao
+import fish.eyebrow.bunnybot.util.collectFilePathData
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -23,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import reactor.core.publisher.Mono
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.ResultSet
 import java.util.*
 
 @ExtendWith(MockKExtension::class)
@@ -46,13 +47,13 @@ internal class IntroHandlerTestCase {
         every { messageChannel.createMessage(any<String>()) } returns Mono.just(message)
         messageCreateEvent = MessageCreateEvent(discordClient, message, null, null)
         h2Connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
-        introHandler = IntroHandler(h2Connection)
-        h2Connection.updateUsingResource("create_intro_table.sql")
+        introHandler = IntroHandler(IntroDao(h2Connection))
+        h2Connection.createStatement().executeUpdate(collectFilePathData("create_intro_table.sql"))
     }
 
     @AfterEach
     internal fun tearDown() {
-        h2Connection.updateUsingResource("delete_intro_table.sql")
+        h2Connection.createStatement().executeUpdate(collectFilePathData("delete_intro_table.sql"))
     }
 
     @Test
@@ -158,5 +159,8 @@ internal class IntroHandlerTestCase {
         introHandler.accept(messageCreateEvent)
     }
 
-    private fun getFirstRowOfQuery() = h2Connection.queryUsingResource("query_intro_table.sql").apply { next() }
+    private fun getFirstRowOfQuery(): ResultSet {
+        val queryIntroTableSql = collectFilePathData("query_intro_table.sql")
+        return h2Connection.createStatement().executeQuery(queryIntroTableSql).apply { next() }
+    }
 }

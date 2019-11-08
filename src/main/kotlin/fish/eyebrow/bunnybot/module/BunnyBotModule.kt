@@ -7,6 +7,7 @@ import com.google.inject.Singleton
 import discord4j.core.DiscordClient
 import discord4j.core.DiscordClientBuilder
 import fish.eyebrow.bunnybot.CommandLineArguments
+import fish.eyebrow.bunnybot.IntroDao
 import fish.eyebrow.bunnybot.handler.DiscordClientWrapper
 import fish.eyebrow.bunnybot.handler.IntroHandler
 import fish.eyebrow.bunnybot.handler.WhoIsHandler
@@ -22,22 +23,30 @@ class BunnyBotModule(private val commandLineArguments: CommandLineArguments) : A
     @Inject
     @Provides
     @Singleton
-    fun createPostgresConnection(): Connection =
-            if (commandLineArguments.dbUser == null || commandLineArguments.dbPassword == null)
-                DriverManager.getConnection(commandLineArguments.dbUrl!!)
-            else
-                DriverManager.getConnection(commandLineArguments.dbUrl!!, commandLineArguments.dbUser, commandLineArguments.dbPassword)
+    fun createPostgresConnection(): Connection {
+        return if (commandLineArguments.dbUser == null || commandLineArguments.dbPassword == null) {
+            DriverManager.getConnection(commandLineArguments.dbUrl!!)
+        } else {
+            DriverManager.getConnection(commandLineArguments.dbUrl!!, commandLineArguments.dbUser, commandLineArguments.dbPassword)
+        }
+    }
 
     @Inject
     @Provides
     @Singleton
-    fun createIntroHandler(connection: Connection): IntroHandler =
-            IntroHandler(connection)
+    fun createIntroDao(connection: Connection): IntroDao =
+            IntroDao(connection)
 
     @Inject
     @Provides
     @Singleton
-    fun createWhoIsHandler(connection: Connection): WhoIsHandler = WhoIsHandler(connection)
+    fun createIntroHandler(introDao: IntroDao): IntroHandler =
+            IntroHandler(introDao)
+
+    @Inject
+    @Provides
+    @Singleton
+    fun createWhoIsHandler(introDao: IntroDao): WhoIsHandler = WhoIsHandler(introDao)
 
     @Inject
     @Provides

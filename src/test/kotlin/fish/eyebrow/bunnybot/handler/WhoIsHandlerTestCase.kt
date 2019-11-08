@@ -6,7 +6,8 @@ import discord4j.core.`object`.entity.MessageChannel
 import discord4j.core.`object`.entity.User
 import discord4j.core.`object`.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
-import fish.eyebrow.bunnybot.sql.updateUsingResource
+import fish.eyebrow.bunnybot.IntroDao
+import fish.eyebrow.bunnybot.util.collectFilePathData
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -44,13 +45,13 @@ internal class WhoIsHandlerTestCase {
         every { messageChannel.createMessage(any<String>()) } returns Mono.just(message)
         messageCreateEvent = MessageCreateEvent(discordClient, message, null, null)
         h2Connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
-        whoIsHandler = WhoIsHandler(h2Connection)
-        h2Connection.updateUsingResource("create_intro_table.sql")
+        whoIsHandler = WhoIsHandler(IntroDao(h2Connection))
+        h2Connection.createStatement().executeUpdate(collectFilePathData("create_intro_table.sql"))
     }
 
     @AfterEach
     internal fun tearDown() {
-        h2Connection.updateUsingResource("delete_intro_table.sql")
+        h2Connection.createStatement().executeUpdate(collectFilePathData("delete_intro_table.sql"))
     }
 
     @Test
@@ -110,14 +111,17 @@ internal class WhoIsHandlerTestCase {
     }
 
     private fun givenExpectedInPostgresOfOnlyRequiredFields(expectedDiscordId: String, expectedName: String, expectedAge: String) {
-        val macroMap = mapOf(
-            ":(discord_id)" to expectedDiscordId,
-            ":(name)" to expectedName,
-            ":(age)" to expectedAge
-        )
-        h2Connection.updateUsingResource("insert_intro_data.sql", macroMap)
+        h2Connection.prepareStatement(collectFilePathData("insert_intro_data.sql")).apply {
+            setString(1, expectedDiscordId)
+            setString(2, expectedName)
+            setString(3, expectedAge)
+            setString(4, null)
+            setString(5, null)
+            executeUpdate()
+        }
     }
 
+    @Suppress("SameParameterValue")
     private fun givenExpectedInPostgres(
             expectedDiscordId: String,
             expectedName: String,
@@ -125,14 +129,14 @@ internal class WhoIsHandlerTestCase {
             expectedPronouns: String,
             expectedExtra: String
     ) {
-        val macroMap = mapOf(
-            ":(discord_id)" to expectedDiscordId,
-            ":(name)" to expectedName,
-            ":(age)" to expectedAge,
-            ":(pronouns)" to expectedPronouns,
-            ":(extra)" to expectedExtra
-        )
-        h2Connection.updateUsingResource("insert_intro_data.sql", macroMap)
+        h2Connection.prepareStatement(collectFilePathData("insert_intro_data.sql")).apply {
+            setString(1, expectedDiscordId)
+            setString(2, expectedName)
+            setString(3, expectedAge)
+            setString(4, expectedPronouns)
+            setString(5, expectedExtra)
+            executeUpdate()
+        }
     }
 
     private fun whenMessageEventIsCapturedWithSetOfMentions(mentions: Set<Snowflake>) {
