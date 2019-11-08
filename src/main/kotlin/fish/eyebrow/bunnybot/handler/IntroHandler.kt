@@ -2,7 +2,7 @@ package fish.eyebrow.bunnybot.handler
 
 import discord4j.core.`object`.entity.Message
 import discord4j.core.event.domain.message.MessageCreateEvent
-import fish.eyebrow.bunnybot.IntroDao
+import fish.eyebrow.bunnybot.dao.IntroDao
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.function.Consumer
@@ -55,7 +55,7 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
     private fun upsertIntroWithMessage(introMap: Map<String, String>, message: Message) {
         val storedIntro = introDao.findIntroWithDiscordId(introMap["discordId"])
         val introName = introMap["name"]
-        if (storedIntro.row > 0) {
+        if (storedIntro.row < 1) {
             introDao.insertIntro(introMap)
             message.new("Great! I've got that all setup for you, $introName! :smile:")
         } else {

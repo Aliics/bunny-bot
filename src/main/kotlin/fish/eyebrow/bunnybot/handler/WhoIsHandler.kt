@@ -2,7 +2,7 @@ package fish.eyebrow.bunnybot.handler
 
 import discord4j.core.`object`.entity.Message
 import discord4j.core.event.domain.message.MessageCreateEvent
-import fish.eyebrow.bunnybot.IntroDao
+import fish.eyebrow.bunnybot.dao.IntroDao
 import java.sql.ResultSet
 import java.util.function.Consumer
 

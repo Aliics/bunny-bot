@@ -6,7 +6,7 @@ import discord4j.core.`object`.entity.MessageChannel
 import discord4j.core.`object`.entity.User
 import discord4j.core.`object`.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
-import fish.eyebrow.bunnybot.IntroDao
+import fish.eyebrow.bunnybot.dao.IntroDao
 import fish.eyebrow.bunnybot.util.collectFilePathData
 import io.mockk.every
 import io.mockk.impl.annotations.MockK

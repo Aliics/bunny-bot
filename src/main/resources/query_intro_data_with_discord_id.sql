@@ -1,1 +1,3 @@
-SELECT * FROM intro WHERE discord_id = ?;
+SELECT *
+FROM intro
+WHERE discord_id = ?;

@@ -7,7 +7,7 @@ import com.google.inject.Singleton
 import discord4j.core.DiscordClient
 import discord4j.core.DiscordClientBuilder
 import fish.eyebrow.bunnybot.CommandLineArguments
-import fish.eyebrow.bunnybot.IntroDao
+import fish.eyebrow.bunnybot.dao.IntroDao
 import fish.eyebrow.bunnybot.handler.DiscordClientWrapper
 import fish.eyebrow.bunnybot.handler.IntroHandler
 import fish.eyebrow.bunnybot.handler.WhoIsHandler

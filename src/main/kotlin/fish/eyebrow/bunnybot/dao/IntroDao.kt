@@ -1,4 +1,4 @@
-package fish.eyebrow.bunnybot
+package fish.eyebrow.bunnybot.dao
 
 import fish.eyebrow.bunnybot.util.collectFilePathData
 import java.sql.Connection
@@ -28,8 +28,9 @@ class IntroDao(private val dbConnection: Connection) {
     }
 
     fun findIntroWithDiscordId(discordId: String?): ResultSet {
-        val preparedStatement = dbConnection.prepareStatement(collectFilePathData("query_intro_data_with_discord_id.sql"))
-        preparedStatement.setString(1, discordId)
-        return preparedStatement.executeQuery()
+        return dbConnection.prepareStatement(collectFilePathData("query_intro_data_with_discord_id.sql")).run {
+            setString(1, discordId)
+            return@run executeQuery().apply { last() }
+        }
     }
 }
