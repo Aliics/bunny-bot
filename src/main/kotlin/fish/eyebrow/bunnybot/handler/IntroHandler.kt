@@ -15,6 +15,7 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
         private const val FORMAT_OF_INTRO_HEADER = "To add stuff do it in the following format. (_only name and age are required, any order_):"
         private const val FORMAT_OF_INTRO = "name=YOUR NAME,age=YOUR AGE,pronouns=YOUR PRONOUNS,extra=YOUR EXTRA NOTES"
         private const val DISCORD_ID_KEY = "discordId"
+        private const val NAME_KEY = "name"
         private const val KEY_VALUE_DELIMITER = "="
         private val logger: Logger = LoggerFactory.getLogger(IntroHandler::class.java)
         private val commaRegex = ",".toRegex()
@@ -53,8 +54,8 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
     }
 
     private fun upsertIntroWithMessage(introMap: Map<String, String>, message: Message) {
-        val storedIntro = introDao.findIntroWithDiscordId(introMap["discordId"])
-        val introName = introMap["name"]
+        val storedIntro = introDao.findIntroWithDiscordId(introMap[DISCORD_ID_KEY])
+        val introName = introMap[NAME_KEY]
         if (storedIntro.row < 1) {
             introDao.insertIntro(introMap)
             message.new("Great! I've got that all setup for you, $introName! :smile:")
