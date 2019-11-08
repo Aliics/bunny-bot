@@ -15,10 +15,10 @@ dependencies {
     implementation("com.discord4j:discord4j-core:3.0.10")
     implementation("com.google.inject:guice:4.2.2")
     implementation("org.postgresql:postgresql:42.2.8")
+    implementation("com.h2database:h2:1.4.200") // Will be testImplementation when not using an in-memory db
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.2")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.5.2")
     testImplementation("io.mockk:mockk:1.9.3")
-    testImplementation("com.h2database:h2:1.4.200")
 }
 
 val test by tasks.getting(Test::class) {
