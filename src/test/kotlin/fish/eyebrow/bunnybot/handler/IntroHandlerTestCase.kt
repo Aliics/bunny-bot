@@ -58,7 +58,6 @@ internal class IntroHandlerTestCase {
 
     @Test
     internal fun `should populate database with new intro when given brand new intro with all fields`() {
-        val expectedId = 1L
         val expectedDiscordId = 48293L
         val expectedName = "Alexander"
         val expectedAge = "20"
@@ -69,7 +68,6 @@ internal class IntroHandlerTestCase {
             messageContent = "!intro name=${expectedName},age=${expectedAge},pronouns=${expectedPronouns},extra=${expectedExtra}"
         )
         val actualResultSet = getFirstRowOfQuery()
-        assertEquals(expectedId, actualResultSet.getLong("id"))
         assertEquals(expectedDiscordId, actualResultSet.getLong("discord_id"))
         assertEquals(expectedName, actualResultSet.getString("name"))
         assertEquals(expectedAge, actualResultSet.getString("age"))
@@ -80,13 +78,11 @@ internal class IntroHandlerTestCase {
 
     @Test
     internal fun `should populate database with new intro when given brand new intro with only required fields`() {
-        val expectedId = 1L
         val expectedDiscordId = 88820L
         val expectedName = "Alfred"
         val expectedAge = "44"
         whenHandlerIsInvokedAsAuthorWithMessage(expectedDiscordId, "!intro name=${expectedName},age=${expectedAge}")
         val actualResultSet = getFirstRowOfQuery()
-        assertEquals(expectedId, actualResultSet.getLong("id"))
         assertEquals(expectedDiscordId, actualResultSet.getLong("discord_id"))
         assertEquals(expectedName, actualResultSet.getString("name"))
         assertEquals(expectedAge, actualResultSet.getString("age"))
@@ -97,14 +93,12 @@ internal class IntroHandlerTestCase {
 
     @Test
     internal fun `should populate database with sanitised new intro when given brand new intro with macro-like strings`() {
-        val expectedId = 1L
         val expectedDiscordId = 7777777L
         val expectedName = "Larissa"
         val expectedAge = "19"
         val expectedExtra = "hello :D"
         whenHandlerIsInvokedAsAuthorWithMessage(expectedDiscordId, "!intro name=${expectedName},age=${expectedAge},extra=${expectedExtra}")
         val actualResultSet = getFirstRowOfQuery()
-        assertEquals(expectedId, actualResultSet.getLong("id"))
         assertEquals(expectedDiscordId, actualResultSet.getLong("discord_id"))
         assertEquals(expectedName, actualResultSet.getString("name"))
         assertEquals(expectedAge, actualResultSet.getString("age"))
@@ -122,7 +116,6 @@ internal class IntroHandlerTestCase {
 
     @Test
     internal fun `should overwrite data in database when there is already an existing row`() {
-        val expectedId = 1L
         val expectedDiscordId = 111L
         val expectedName = "Oliver"
         val expectedAge = "1"
@@ -130,7 +123,6 @@ internal class IntroHandlerTestCase {
         whenHandlerIsInvokedAsAuthorWithMessage(expectedDiscordId, "!intro name=${expectedName},age=${expectedAge},extra=pwes! :carrot:")
         whenHandlerIsInvokedAsAuthorWithMessage(expectedDiscordId, "!intro name=${expectedName},age=${expectedAge},extra=${expectedExtra}")
         val actualResultSet = getFirstRowOfQuery()
-        assertEquals(expectedId, actualResultSet.getLong("id"))
         assertEquals(expectedDiscordId, actualResultSet.getLong("discord_id"))
         assertEquals(expectedName, actualResultSet.getString("name"))
         assertEquals(expectedAge, actualResultSet.getString("age"))
