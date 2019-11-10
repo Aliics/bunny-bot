@@ -1,2 +1,2 @@
 INSERT INTO intro
-VALUES (NULL, ?, ?, ?, ?, ?);
+VALUES (DEFAULT, ?, ?, ?, ?, ?);
