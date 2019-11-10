@@ -51,7 +51,10 @@ internal class WhoIsHandlerTestCase {
 
     @AfterEach
     internal fun tearDown() {
-        h2Connection.createStatement().executeUpdate(collectFilePathData("delete_intro_table.sql"))
+        try {
+            h2Connection.createStatement().executeUpdate(collectFilePathData("delete_intro_table.sql"))
+        } catch (e: Exception) {
+        }
     }
 
     @Test
@@ -108,6 +111,18 @@ internal class WhoIsHandlerTestCase {
     internal fun `should prompt to mention someone when no mentions are in content`() {
         whenMessageEventIsCapturedWithSetOfMentions(emptySet())
         verify { messageChannel.createMessage("Oh noes! No mention given with command!") }
+    }
+
+    @Test
+    internal fun `should prompt that an exception occurred with error message`() {
+        val expectedDiscordId = "2839182"
+        givenDroppedIntroTable()
+        whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedDiscordId)))
+        verify { messageChannel.createMessage("A bizarre error has occurred updating your intro :alien:") }
+    }
+
+    private fun givenDroppedIntroTable() {
+        h2Connection.createStatement().executeUpdate(collectFilePathData("delete_intro_table.sql"))
     }
 
     private fun givenExpectedInPostgresOfOnlyRequiredFields(expectedDiscordId: String, expectedName: String, expectedAge: String) {
