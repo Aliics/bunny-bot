@@ -17,7 +17,7 @@ class IntroDao(private val dbConnection: Connection) {
     }
 
     fun insertIntro(introMap: Map<String, String>) {
-        dbConnection.prepareStatement(collectFilePathData(INSERT_INTRO_DATA_SQL)).apply {
+        prepareScrollableStatement(INSERT_INTRO_DATA_SQL).apply {
             setString(1, introMap[DISCORD_ID_KEY])
             setString(2, introMap[NAME_KEY])
             setString(3, introMap[AGE_KEY])
@@ -28,7 +28,7 @@ class IntroDao(private val dbConnection: Connection) {
     }
 
     fun updateIntro(introMap: Map<String, String>) {
-        dbConnection.prepareStatement(collectFilePathData(UPDATE_INTRO_DATA_SQL)).apply {
+        prepareScrollableStatement(UPDATE_INTRO_DATA_SQL).apply {
             setString(1, introMap[NAME_KEY])
             setString(2, introMap[AGE_KEY])
             setString(3, introMap[PRONOUNS_KEY])
@@ -39,9 +39,12 @@ class IntroDao(private val dbConnection: Connection) {
     }
 
     fun findIntroWithDiscordId(discordId: String?): ResultSet {
-        return dbConnection.prepareStatement(collectFilePathData(QUERY_INTRO_DATA_WITH_DISCORD_ID_SQL)).run {
+        return prepareScrollableStatement(QUERY_INTRO_DATA_WITH_DISCORD_ID_SQL).run {
             setString(1, discordId)
             return@run executeQuery().apply { last() }
         }
     }
+
+    private fun prepareScrollableStatement(sqlResource: String) =
+            dbConnection.prepareStatement(collectFilePathData(sqlResource), ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)
 }
