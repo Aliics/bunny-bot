@@ -10,13 +10,7 @@ import java.util.function.Consumer
 
 class WhoIsHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent> {
     companion object {
-        private const val ERROR_LOG_MESSAGE = "An exception occurred when querying postgres:"
         private const val NO_MENTIONS = "Oh noes! No mention given with command!"
-        private const val ERROR_MESSAGE = "A bizarre error has occurred updating your intro :alien:"
-        private const val NAME_KEY = "name"
-        private const val AGE_KEY = "age"
-        private const val PRONOUNS_KEY = "pronouns"
-        private const val EXTRA_KEY = "extra"
         private val logger: Logger = LoggerFactory.getLogger(WhoIsHandler::class.java)
     }
 
@@ -31,18 +25,18 @@ class WhoIsHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
                     if (result.row < 1) return@forEach
                     sendResponse(result, message)
                 } catch (e: Exception) {
-                    message.new(ERROR_MESSAGE)
-                    logger.error(ERROR_LOG_MESSAGE, e)
+                    message.new(DiscordClientWrapper.INTERNAL_ERROR_MESSAGE)
+                    logger.error("An exception occurred when handling !whois:", e)
                 }
             }
         }
     }
 
     private fun sendResponse(result: ResultSet, message: Message) {
-        val nameField = takeIfValueNonNull(result, NAME_KEY)
-        val ageField = takeIfValueNonNull(result, AGE_KEY)
-        val pronounsField = takeIfValueNonNull(result, PRONOUNS_KEY)
-        val extraField = takeIfValueNonNull(result, EXTRA_KEY)
+        val nameField = takeIfValueNonNull(result, DiscordClientWrapper.NAME_KEY)
+        val ageField = takeIfValueNonNull(result, DiscordClientWrapper.AGE_KEY)
+        val pronounsField = takeIfValueNonNull(result, DiscordClientWrapper.PRONOUNS_KEY)
+        val extraField = takeIfValueNonNull(result, DiscordClientWrapper.EXTRA_KEY)
         message.new("$nameField\n$ageField\n$pronounsField\n$extraField")
     }
 

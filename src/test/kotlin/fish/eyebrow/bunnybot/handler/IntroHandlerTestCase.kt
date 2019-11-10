@@ -117,7 +117,7 @@ internal class IntroHandlerTestCase {
     internal fun `should respond with an error message when no discord id is attached`() {
         every { message.content } returns Optional.of("!intro name=Candi,extra=feed me >:O")
         introHandler.accept(messageCreateEvent)
-        verify { messageChannel.createMessage("A bizarre error has occurred updating your intro :alien:") }
+        verify { messageChannel.createMessage("A bizarre error has occurred :alien:") }
     }
 
     @Test

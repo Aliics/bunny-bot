@@ -1,5 +1,6 @@
 package fish.eyebrow.bunnybot.dao
 
+import fish.eyebrow.bunnybot.handler.DiscordClientWrapper
 import fish.eyebrow.bunnybot.util.collectFilePathData
 import java.sql.Connection
 import java.sql.ResultSet
@@ -9,31 +10,27 @@ class IntroDao(private val dbConnection: Connection) {
         private const val INSERT_INTRO_DATA_SQL = "insert_intro_data.sql"
         private const val UPDATE_INTRO_DATA_SQL = "update_intro_data.sql"
         private const val QUERY_INTRO_DATA_WITH_DISCORD_ID_SQL = "query_intro_data_with_discord_id.sql"
-        private const val DISCORD_ID_KEY = "discordId"
-        private const val NAME_KEY = "name"
-        private const val AGE_KEY = "age"
-        private const val PRONOUNS_KEY = "pronouns"
-        private const val EXTRA_KEY = "extra"
+
     }
 
     fun insertIntro(introMap: Map<String, String>) {
         prepareScrollableStatement(INSERT_INTRO_DATA_SQL).apply {
-            setString(1, introMap[DISCORD_ID_KEY])
-            setString(2, introMap[NAME_KEY])
-            setString(3, introMap[AGE_KEY])
-            setString(4, introMap[PRONOUNS_KEY])
-            setString(5, introMap[EXTRA_KEY])
+            setString(1, introMap[DiscordClientWrapper.DISCORD_ID_KEY])
+            setString(2, introMap[DiscordClientWrapper.NAME_KEY])
+            setString(3, introMap[DiscordClientWrapper.AGE_KEY])
+            setString(4, introMap[DiscordClientWrapper.PRONOUNS_KEY])
+            setString(5, introMap[DiscordClientWrapper.EXTRA_KEY])
             executeUpdate()
         }
     }
 
     fun updateIntro(introMap: Map<String, String>) {
         prepareScrollableStatement(UPDATE_INTRO_DATA_SQL).apply {
-            setString(1, introMap[NAME_KEY])
-            setString(2, introMap[AGE_KEY])
-            setString(3, introMap[PRONOUNS_KEY])
-            setString(4, introMap[EXTRA_KEY])
-            setString(5, introMap[DISCORD_ID_KEY])
+            setString(1, introMap[DiscordClientWrapper.NAME_KEY])
+            setString(2, introMap[DiscordClientWrapper.AGE_KEY])
+            setString(3, introMap[DiscordClientWrapper.PRONOUNS_KEY])
+            setString(4, introMap[DiscordClientWrapper.EXTRA_KEY])
+            setString(5, introMap[DiscordClientWrapper.DISCORD_ID_KEY])
             executeUpdate()
         }
     }

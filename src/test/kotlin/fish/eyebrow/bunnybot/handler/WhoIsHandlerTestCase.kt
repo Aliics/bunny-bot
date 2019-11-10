@@ -118,7 +118,7 @@ internal class WhoIsHandlerTestCase {
         val expectedDiscordId = "2839182"
         givenDroppedIntroTable()
         whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedDiscordId)))
-        verify { messageChannel.createMessage("A bizarre error has occurred updating your intro :alien:") }
+        verify { messageChannel.createMessage("A bizarre error has occurred :alien:") }
     }
 
     private fun givenDroppedIntroTable() {
