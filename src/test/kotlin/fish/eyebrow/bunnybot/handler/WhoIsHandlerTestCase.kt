@@ -1,6 +1,8 @@
 package fish.eyebrow.bunnybot.handler
 
 import discord4j.core.DiscordClient
+import discord4j.core.`object`.entity.Guild
+import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.MessageChannel
 import discord4j.core.`object`.entity.User
@@ -34,6 +36,10 @@ internal class WhoIsHandlerTestCase {
     private lateinit var author: User
     @MockK
     private lateinit var messageChannel: MessageChannel
+    @MockK
+    private lateinit var guild: Guild
+    @MockK
+    private lateinit var member: Member
     private lateinit var messageCreateEvent: MessageCreateEvent
     private lateinit var h2Connection: Connection
     private lateinit var whoIsHandler: WhoIsHandler
@@ -42,7 +48,10 @@ internal class WhoIsHandlerTestCase {
     internal fun setUp() {
         every { message.author } returns Optional.of(author)
         every { message.channel } returns Mono.just(messageChannel)
+        every { message.guild } returns Mono.just(guild)
         every { messageChannel.createMessage(any<String>()) } returns Mono.just(message)
+        every { guild.getMemberById(any()) } returns Mono.just(member)
+        every { member.mention } returns ""
         messageCreateEvent = MessageCreateEvent(discordClient, message, null, null)
         h2Connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
         whoIsHandler = WhoIsHandler(IntroDao(h2Connection))
@@ -92,19 +101,12 @@ internal class WhoIsHandlerTestCase {
     }
 
     @Test
-    internal fun `should respond with only intro when one of the mentions has no intro`() {
-        val slot = slot<String>()
-        val expectedDiscordId = "2839183"
-        val expectedName = "Candi"
-        val expectedAge = "-1"
-        givenExpectedInPostgresOfOnlyRequiredFields(expectedDiscordId, expectedName, expectedAge)
-        whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedDiscordId), Snowflake.of("1234")))
-        verify(exactly = 1) { messageChannel.createMessage(capture(slot)) }
-        val actualMessage = slot.captured
-        assertTrue(actualMessage.contains("name: $expectedName"))
-        assertTrue(actualMessage.contains("age: $expectedAge"))
-        assertFalse(actualMessage.contains("pronouns"))
-        assertFalse(actualMessage.contains("extra"))
+    internal fun `should respond with no intro found when mentioned has no intro`() {
+        val expectedMention = "<@Candi#1111>"
+        val givenSnowflake = Snowflake.of("11112222")
+        every { member.mention } returns expectedMention
+        whenMessageEventIsCapturedWithSetOfMentions(setOf(givenSnowflake))
+        verify { messageChannel.createMessage("Uh oh! $expectedMention has no intro yet!") }
     }
 
     @Test
@@ -115,9 +117,8 @@ internal class WhoIsHandlerTestCase {
 
     @Test
     internal fun `should prompt that an exception occurred with error message`() {
-        val expectedDiscordId = "2839182"
         givenDroppedIntroTable()
-        whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedDiscordId)))
+        whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of("2839182")))
         verify { messageChannel.createMessage("A bizarre error has occurred :alien:") }
     }
 
@@ -125,6 +126,7 @@ internal class WhoIsHandlerTestCase {
         h2Connection.createStatement().executeUpdate(collectFilePathData("delete_intro_table.sql"))
     }
 
+    @Suppress("SameParameterValue")
     private fun givenExpectedInPostgresOfOnlyRequiredFields(expectedDiscordId: String, expectedName: String, expectedAge: String) {
         h2Connection.prepareStatement(collectFilePathData("insert_intro_data.sql")).apply {
             setString(1, expectedDiscordId)

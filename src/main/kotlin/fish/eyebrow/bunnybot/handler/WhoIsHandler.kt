@@ -21,8 +21,12 @@ class WhoIsHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
             forEach { snowflake ->
                 try {
                     val discordId = snowflake.asString()
+                    val mention = message.guild.block()?.getMemberById(snowflake)?.block()?.mention
                     val result = introDao.findIntroWithDiscordId(discordId)
-                    if (result.row < 1) return@forEach
+                    if (result.row < 1) {
+                        message.new("Uh oh! $mention has no intro yet!")
+                        return@forEach
+                    }
                     sendResponse(result, message)
                 } catch (e: Exception) {
                     message.new(DiscordClientWrapper.INTERNAL_ERROR_MESSAGE)
