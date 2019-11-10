@@ -7,6 +7,7 @@ import discord4j.core.`object`.entity.User
 import discord4j.core.`object`.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import fish.eyebrow.bunnybot.dao.IntroDao
+import fish.eyebrow.bunnybot.model.Intro
 import fish.eyebrow.bunnybot.util.collectFilePathData
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -58,53 +59,25 @@ internal class IntroHandlerTestCase {
 
     @Test
     internal fun `should populate database with new intro when given brand new intro with all fields`() {
-        val expectedDiscordId = "48293"
-        val expectedName = "Alexander"
-        val expectedAge = "20"
-        val expectedPronouns = "he/him"
-        val expectedExtra = "likes pepsi and rabbits"
+        val expectedIntro = Intro("48293", "Alexander", "20", "he/him", "likes pepsi and rabbits")
         whenHandlerIsInvokedAsAuthorWithMessage(
-            authorId = expectedDiscordId,
-            messageContent = "!intro name=${expectedName},age=${expectedAge},pronouns=${expectedPronouns},extra=${expectedExtra}"
+            authorId = expectedIntro.discordId,
+            messageContent = "!intro name=${expectedIntro.name},age=${expectedIntro.age},pronouns=${expectedIntro.pronouns},extra=${expectedIntro.extra}"
         )
-        val actualResultSet = getFirstRowOfQuery()
-        assertEquals(expectedDiscordId, actualResultSet.getString("discord_id"))
-        assertEquals(expectedName, actualResultSet.getString("name"))
-        assertEquals(expectedAge, actualResultSet.getString("age"))
-        assertEquals(expectedPronouns, actualResultSet.getString("pronouns"))
-        assertEquals(expectedExtra, actualResultSet.getString("extra"))
+        val actualResultSet = getIntroTableResultSet()
+        val actualIntro = Intro.fromResultSet(actualResultSet).first()
+        assertEquals(expectedIntro, actualIntro)
         verify { messageChannel.createMessage("Great! I've got that all setup for you, Alexander! :smile:") }
     }
 
     @Test
     internal fun `should populate database with new intro when given brand new intro with only required fields`() {
-        val expectedDiscordId = "88820"
-        val expectedName = "Alfred"
-        val expectedAge = "44"
-        whenHandlerIsInvokedAsAuthorWithMessage(expectedDiscordId, "!intro name=${expectedName},age=${expectedAge}")
-        val actualResultSet = getFirstRowOfQuery()
-        assertEquals(expectedDiscordId, actualResultSet.getString("discord_id"))
-        assertEquals(expectedName, actualResultSet.getString("name"))
-        assertEquals(expectedAge, actualResultSet.getString("age"))
-        assertNull(actualResultSet.getString("pronouns"))
-        assertNull(actualResultSet.getString("extra"))
+        val expectedIntro = Intro("88820", "Alfred", "44")
+        whenHandlerIsInvokedAsAuthorWithMessage(expectedIntro.discordId, "!intro name=${expectedIntro.name},age=${expectedIntro.age}")
+        val actualResultSet = getIntroTableResultSet()
+        val actualIntro = Intro.fromResultSet(actualResultSet).first()
+        assertEquals(expectedIntro, actualIntro)
         verify { messageChannel.createMessage("Great! I've got that all setup for you, Alfred! :smile:") }
-    }
-
-    @Test
-    internal fun `should populate database with sanitised new intro when given brand new intro with macro-like strings`() {
-        val expectedDiscordId = "7777777"
-        val expectedName = "Larissa"
-        val expectedAge = "19"
-        val expectedExtra = "hello :D"
-        whenHandlerIsInvokedAsAuthorWithMessage(expectedDiscordId, "!intro name=${expectedName},age=${expectedAge},extra=${expectedExtra}")
-        val actualResultSet = getFirstRowOfQuery()
-        assertEquals(expectedDiscordId, actualResultSet.getString("discord_id"))
-        assertEquals(expectedName, actualResultSet.getString("name"))
-        assertEquals(expectedAge, actualResultSet.getString("age"))
-        assertNull(actualResultSet.getString("pronouns"))
-        assertEquals(expectedExtra, actualResultSet.getString("extra"))
-        verify { messageChannel.createMessage("Great! I've got that all setup for you, Larissa! :smile:") }
     }
 
     @Test
@@ -116,18 +89,18 @@ internal class IntroHandlerTestCase {
 
     @Test
     internal fun `should overwrite data in database when there is already an existing row`() {
-        val expectedDiscordId = "111"
-        val expectedName = "Oliver"
-        val expectedAge = "1"
-        val expectedExtra = "pwes! big wuv! :carrot: :heart:"
-        whenHandlerIsInvokedAsAuthorWithMessage(expectedDiscordId, "!intro name=${expectedName},age=${expectedAge},extra=pwes! :carrot:")
-        whenHandlerIsInvokedAsAuthorWithMessage(expectedDiscordId, "!intro name=${expectedName},age=${expectedAge},extra=${expectedExtra}")
-        val actualResultSet = getFirstRowOfQuery()
-        assertEquals(expectedDiscordId, actualResultSet.getString("discord_id"))
-        assertEquals(expectedName, actualResultSet.getString("name"))
-        assertEquals(expectedAge, actualResultSet.getString("age"))
-        assertNull(actualResultSet.getString("pronouns"))
-        assertEquals(expectedExtra, actualResultSet.getString("extra"))
+        val expectedIntro = Intro("111", "Oliver", "1", extra = "pwes! big wuv! :carrot: :heart:")
+        whenHandlerIsInvokedAsAuthorWithMessage(
+            expectedIntro.discordId,
+            "!intro name=${expectedIntro.name},age=${expectedIntro.age},extra=pwes! :carrot:"
+        )
+        whenHandlerIsInvokedAsAuthorWithMessage(
+            expectedIntro.discordId,
+            "!intro name=${expectedIntro.name},age=${expectedIntro.age},extra=${expectedIntro.extra}"
+        )
+        val actualResultSet = getIntroTableResultSet()
+        val actualIntro = Intro.fromResultSet(actualResultSet).first()
+        assertEquals(expectedIntro, actualIntro)
         verify { messageChannel.createMessage("Awesome! I've overwritten your previous intro, Oliver! :smile:") }
     }
 
@@ -151,8 +124,8 @@ internal class IntroHandlerTestCase {
         introHandler.accept(messageCreateEvent)
     }
 
-    private fun getFirstRowOfQuery(): ResultSet {
+    private fun getIntroTableResultSet(): ResultSet {
         val queryIntroTableSql = collectFilePathData("query_intro_table.sql")
-        return h2Connection.createStatement().executeQuery(queryIntroTableSql).apply { next() }
+        return h2Connection.createStatement().executeQuery(queryIntroTableSql)
     }
 }

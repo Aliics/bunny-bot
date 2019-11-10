@@ -1,6 +1,6 @@
 package fish.eyebrow.bunnybot.dao
 
-import fish.eyebrow.bunnybot.handler.DiscordClientWrapper
+import fish.eyebrow.bunnybot.model.Intro
 import fish.eyebrow.bunnybot.util.collectFilePathData
 import java.sql.Connection
 import java.sql.ResultSet
@@ -13,33 +13,33 @@ class IntroDao(private val dbConnection: Connection) {
 
     }
 
-    fun insertIntro(introMap: Map<String, String>) {
+    fun insertIntro(introMap: Intro) {
         prepareScrollableStatement(INSERT_INTRO_DATA_SQL).apply {
-            setString(1, introMap[DiscordClientWrapper.DISCORD_ID_KEY])
-            setString(2, introMap[DiscordClientWrapper.NAME_KEY])
-            setString(3, introMap[DiscordClientWrapper.AGE_KEY])
-            setString(4, introMap[DiscordClientWrapper.PRONOUNS_KEY])
-            setString(5, introMap[DiscordClientWrapper.EXTRA_KEY])
+            setString(1, introMap.discordId)
+            setString(2, introMap.name)
+            setString(3, introMap.age)
+            setString(4, introMap.pronouns)
+            setString(5, introMap.extra)
             executeUpdate()
         }
     }
 
-    fun updateIntro(introMap: Map<String, String>) {
+    fun updateIntro(introMap: Intro) {
         prepareScrollableStatement(UPDATE_INTRO_DATA_SQL).apply {
-            setString(1, introMap[DiscordClientWrapper.NAME_KEY])
-            setString(2, introMap[DiscordClientWrapper.AGE_KEY])
-            setString(3, introMap[DiscordClientWrapper.PRONOUNS_KEY])
-            setString(4, introMap[DiscordClientWrapper.EXTRA_KEY])
-            setString(5, introMap[DiscordClientWrapper.DISCORD_ID_KEY])
+            setString(1, introMap.name)
+            setString(2, introMap.age)
+            setString(3, introMap.pronouns)
+            setString(4, introMap.extra)
+            setString(5, introMap.discordId)
             executeUpdate()
         }
     }
 
-    fun findIntroWithDiscordId(discordId: String?): ResultSet {
-        return prepareScrollableStatement(QUERY_INTRO_DATA_WITH_DISCORD_ID_SQL).run {
+    fun findIntroWithDiscordId(discordId: String?): List<Intro> {
+        return Intro.fromResultSet(prepareScrollableStatement(QUERY_INTRO_DATA_WITH_DISCORD_ID_SQL).run {
             setString(1, discordId)
-            return@run executeQuery().apply { last() }
-        }
+            return@run executeQuery()
+        })
     }
 
     private fun prepareScrollableStatement(sqlResource: String) =

@@ -8,10 +8,6 @@ class DiscordClientWrapper(private val discordClient: DiscordClient, private val
         internal const val INTRO_COMMAND = "!intro"
         internal const val WHOIS_COMMAND = "!whois"
         internal const val DISCORD_ID_KEY = "discordId"
-        internal const val NAME_KEY = "name"
-        internal const val AGE_KEY = "age"
-        internal const val PRONOUNS_KEY = "pronouns"
-        internal const val EXTRA_KEY = "extra"
         internal const val INTERNAL_ERROR_MESSAGE = "A bizarre error has occurred :alien:"
     }
 

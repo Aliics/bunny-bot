@@ -3,6 +3,7 @@ package fish.eyebrow.bunnybot.handler
 import discord4j.core.`object`.entity.Message
 import discord4j.core.event.domain.message.MessageCreateEvent
 import fish.eyebrow.bunnybot.dao.IntroDao
+import fish.eyebrow.bunnybot.model.Intro
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.function.Consumer
@@ -23,12 +24,10 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
         message.content.ifPresent { content ->
             try {
                 val discordId = message.author.get().id.asString()
-                val introMap = setupIntroFieldMap(discordId, content)
-                if (introMap.isNotEmpty()) {
-                    upsertIntroWithMessage(introMap, message)
-                } else {
-                    message.new("$HUMOURING_PROMPT\n$FORMAT_OF_INTRO_HEADER\n$FORMAT_OF_INTRO")
-                }
+                val intro = setupIntroFieldMap(discordId, content)
+                upsertIntroWithMessage(intro, message)
+            } catch (e: NoSuchElementException) {
+                message.new("$HUMOURING_PROMPT\n$FORMAT_OF_INTRO_HEADER\n$FORMAT_OF_INTRO")
             } catch (e: Exception) {
                 message.new(DiscordClientWrapper.INTERNAL_ERROR_MESSAGE)
                 logger.error("An exception occurred when handling !intro:", e)
@@ -36,8 +35,8 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
         }
     }
 
-    private fun setupIntroFieldMap(discordId: String, content: String): Map<String, String> {
-        return mutableMapOf(DiscordClientWrapper.DISCORD_ID_KEY to discordId).let { introMap ->
+    private fun setupIntroFieldMap(discordId: String, content: String): Intro {
+        return Intro.fromMap(mutableMapOf(DiscordClientWrapper.DISCORD_ID_KEY to discordId).let { introMap ->
             val introParamMap = content.removePrefix(DiscordClientWrapper.INTRO_COMMAND)
                 .trimStart()
                 .split(commaRegex)
@@ -46,19 +45,18 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
                     val (key, value) = it.split(KEY_VALUE_DELIMITER)
                     return@associate key to value
                 }
-            return@let if (introParamMap.isNotEmpty()) introMap.apply { putAll(introParamMap) } else emptyMap()
-        }
+            return@let if (introParamMap.isNotEmpty()) introMap.apply { putAll(introParamMap) } else emptyMap<String, String>()
+        })
     }
 
-    private fun upsertIntroWithMessage(introMap: Map<String, String>, message: Message) {
-        val storedIntro = introDao.findIntroWithDiscordId(introMap[DiscordClientWrapper.DISCORD_ID_KEY])
-        val introName = introMap[DiscordClientWrapper.NAME_KEY]
-        if (storedIntro.row < 1) {
-            introDao.insertIntro(introMap)
-            message.new("Great! I've got that all setup for you, $introName! :smile:")
+    private fun upsertIntroWithMessage(intro: Intro, message: Message) {
+        val storedIntro = introDao.findIntroWithDiscordId(intro.discordId)
+        if (storedIntro.isEmpty()) {
+            introDao.insertIntro(intro)
+            message.new("Great! I've got that all setup for you, ${intro.name}! :smile:")
         } else {
-            introDao.updateIntro(introMap)
-            message.new("Awesome! I've overwritten your previous intro, $introName! :smile:")
+            introDao.updateIntro(intro)
+            message.new("Awesome! I've overwritten your previous intro, ${intro.name}! :smile:")
         }
     }
 

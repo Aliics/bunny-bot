@@ -9,6 +9,7 @@ import discord4j.core.`object`.entity.User
 import discord4j.core.`object`.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import fish.eyebrow.bunnybot.dao.IntroDao
+import fish.eyebrow.bunnybot.model.Intro
 import fish.eyebrow.bunnybot.util.collectFilePathData
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -16,7 +17,6 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -69,35 +69,29 @@ internal class WhoIsHandlerTestCase {
     @Test
     internal fun `should respond with a message containing intro data for a mention that has an intro`() {
         val slot = slot<String>()
-        val expectedDiscordId = "7777777"
-        val expectedName = "Larissa"
-        val expectedAge = "19"
-        val expectedPronouns = "she/her"
-        val expectedExtra = "i love bunnies"
-        givenExpectedInPostgres(expectedDiscordId, expectedName, expectedAge, expectedPronouns, expectedExtra)
-        whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedDiscordId)))
+        val expectedIntro = Intro(discordId = "7777777", name = "Larissa", age = "19", pronouns = "she/her", extra = "i loves bunnies")
+        givenExpectedInPostgres(expectedIntro)
+        whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedIntro.discordId)))
         verify { messageChannel.createMessage(capture(slot)) }
         val actualMessage = slot.captured
-        assertTrue(actualMessage.contains("name: $expectedName"))
-        assertTrue(actualMessage.contains("age: $expectedAge"))
-        assertTrue(actualMessage.contains("pronouns: $expectedPronouns"))
-        assertTrue(actualMessage.contains("extra: $expectedExtra"))
+        assertTrue(actualMessage.contains("name: ${expectedIntro.name}"))
+        assertTrue(actualMessage.contains("age: ${expectedIntro.age}"))
+        assertTrue(actualMessage.contains("pronouns: ${expectedIntro.pronouns}"))
+        assertTrue(actualMessage.contains("extra: ${expectedIntro.extra}"))
     }
 
     @Test
-    internal fun `should only respond with the fields populated fields when only the required fields have values`() {
+    internal fun `should only respond with nulled out fields when intro does not contain fields`() {
         val slot = slot<String>()
-        val expectedDiscordId = "2839182"
-        val expectedName = "Alfred"
-        val expectedAge = "1029"
-        givenExpectedInPostgresOfOnlyRequiredFields(expectedDiscordId, expectedName, expectedAge)
-        whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedDiscordId)))
+        val expectedIntro = Intro(discordId = "2839182", name = "Alfred", age = "1029")
+        givenExpectedInPostgres(expectedIntro)
+        whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedIntro.discordId)))
         verify { messageChannel.createMessage(capture(slot)) }
         val actualMessage = slot.captured
-        assertTrue(actualMessage.contains("name: $expectedName"))
-        assertTrue(actualMessage.contains("age: $expectedAge"))
-        assertFalse(actualMessage.contains("pronouns"))
-        assertFalse(actualMessage.contains("extra"))
+        assertTrue(actualMessage.contains("name: ${expectedIntro.name}"))
+        assertTrue(actualMessage.contains("age: ${expectedIntro.age}"))
+        assertTrue(actualMessage.contains("pronouns: null"))
+        assertTrue(actualMessage.contains("extra: null"))
     }
 
     @Test
@@ -127,31 +121,13 @@ internal class WhoIsHandlerTestCase {
     }
 
     @Suppress("SameParameterValue")
-    private fun givenExpectedInPostgresOfOnlyRequiredFields(expectedDiscordId: String, expectedName: String, expectedAge: String) {
+    private fun givenExpectedInPostgres(intro: Intro) {
         h2Connection.prepareStatement(collectFilePathData("insert_intro_data.sql")).apply {
-            setString(1, expectedDiscordId)
-            setString(2, expectedName)
-            setString(3, expectedAge)
-            setString(4, null)
-            setString(5, null)
-            executeUpdate()
-        }
-    }
-
-    @Suppress("SameParameterValue")
-    private fun givenExpectedInPostgres(
-            expectedDiscordId: String,
-            expectedName: String,
-            expectedAge: String,
-            expectedPronouns: String,
-            expectedExtra: String
-    ) {
-        h2Connection.prepareStatement(collectFilePathData("insert_intro_data.sql")).apply {
-            setString(1, expectedDiscordId)
-            setString(2, expectedName)
-            setString(3, expectedAge)
-            setString(4, expectedPronouns)
-            setString(5, expectedExtra)
+            setString(1, intro.discordId)
+            setString(2, intro.name)
+            setString(3, intro.age)
+            setString(4, intro.pronouns)
+            setString(5, intro.extra)
             executeUpdate()
         }
     }

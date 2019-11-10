@@ -3,9 +3,9 @@ package fish.eyebrow.bunnybot.handler
 import discord4j.core.`object`.entity.Message
 import discord4j.core.event.domain.message.MessageCreateEvent
 import fish.eyebrow.bunnybot.dao.IntroDao
+import fish.eyebrow.bunnybot.model.Intro
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.sql.ResultSet
 import java.util.function.Consumer
 
 class WhoIsHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent> {
@@ -22,12 +22,12 @@ class WhoIsHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
                 try {
                     val discordId = snowflake.asString()
                     val mention = message.guild.block()?.getMemberById(snowflake)?.block()?.mention
-                    val result = introDao.findIntroWithDiscordId(discordId)
-                    if (result.row < 1) {
+                    val intros = introDao.findIntroWithDiscordId(discordId)
+                    if (intros.isEmpty()) {
                         message.new("Uh oh! $mention has no intro yet!")
                         return@forEach
                     }
-                    sendResponse(result, message)
+                    sendResponse(intros.first(), message)
                 } catch (e: Exception) {
                     message.new(DiscordClientWrapper.INTERNAL_ERROR_MESSAGE)
                     logger.error("An exception occurred when handling !whois:", e)
@@ -36,18 +36,13 @@ class WhoIsHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
         }
     }
 
-    private fun sendResponse(result: ResultSet, message: Message) {
-        val nameField = takeIfValueNonNull(result, DiscordClientWrapper.NAME_KEY)
-        val ageField = takeIfValueNonNull(result, DiscordClientWrapper.AGE_KEY)
-        val pronounsField = takeIfValueNonNull(result, DiscordClientWrapper.PRONOUNS_KEY)
-        val extraField = takeIfValueNonNull(result, DiscordClientWrapper.EXTRA_KEY)
+    private fun sendResponse(intro: Intro, message: Message) {
+        val nameField = "name: ${intro.name}"
+        val ageField = "age: ${intro.age}"
+        val pronounsField = "pronouns: ${intro.pronouns}"
+        val extraField = "extra: ${intro.extra}"
         message.new("$nameField\n$ageField\n$pronounsField\n$extraField")
     }
 
     private fun Message.new(content: String) = channel.block()?.createMessage(content)?.block()
-
-    private fun takeIfValueNonNull(result: ResultSet, column: String): String {
-        val value = result.getString(column)
-        return if (value != null) "$column: $value" else ""
-    }
 }
