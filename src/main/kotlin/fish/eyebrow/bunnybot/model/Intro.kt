@@ -5,5 +5,6 @@ data class Intro(
         val name: String,
         val age: String,
         val pronouns: String? = null,
-        val extra: String? = null
+        val extra: String? = null,
+        val icon: String? = null
 )

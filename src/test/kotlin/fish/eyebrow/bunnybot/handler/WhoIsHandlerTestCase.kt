@@ -69,15 +69,22 @@ internal class WhoIsHandlerTestCase {
     @Test
     internal fun `should respond with a message containing intro data for a mention that has an intro`() {
         val slot = slot<String>()
-        val expectedIntro = Intro(discordId = "7777777", name = "Larissa", age = "19", pronouns = "she/her", extra = "i loves bunnies")
+        val expectedIntro = Intro(
+            discordId = "7777777",
+            name = "Larissa",
+            age = "19",
+            pronouns = "she/her",
+            extra = "i loves bunnies",
+            icon = ":heart:"
+        )
         givenExpectedInPostgres(expectedIntro)
         whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedIntro.discordId)))
         verify { messageChannel.createMessage(capture(slot)) }
         val actualMessage = slot.captured
-        assertTrue(actualMessage.contains("name: ${expectedIntro.name}"))
-        assertTrue(actualMessage.contains("age: ${expectedIntro.age}"))
-        assertTrue(actualMessage.contains("pronouns: ${expectedIntro.pronouns}"))
-        assertTrue(actualMessage.contains("extra: ${expectedIntro.extra}"))
+        assertTrue(actualMessage.contains(":heart: name: ${expectedIntro.name}"))
+        assertTrue(actualMessage.contains(":heart: age: ${expectedIntro.age}"))
+        assertTrue(actualMessage.contains(":heart: pronouns: ${expectedIntro.pronouns}"))
+        assertTrue(actualMessage.contains(":heart: extra: ${expectedIntro.extra}"))
     }
 
     @Test
@@ -127,6 +134,7 @@ internal class WhoIsHandlerTestCase {
             setString(3, intro.age)
             setString(4, intro.pronouns)
             setString(5, intro.extra)
+            setString(6, intro.icon)
             executeUpdate()
         }
     }

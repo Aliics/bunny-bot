@@ -2,5 +2,6 @@ UPDATE intro
 SET name=?,
     age=?,
     pronouns=?,
-    extra=?
+    extra=?,
+    icon=?
 WHERE discord_id=?;

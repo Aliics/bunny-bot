@@ -10,13 +10,14 @@ import java.sql.ResultSet
 internal class IntroFactoryTestCase {
     @Test
     internal fun `should initialize from map when all fields present`() {
-        val expectedIntro = Intro("22", "Candi", "3", "she/her", "loves banana")
+        val expectedIntro = Intro("22", "Candi", "3", "she/her", "loves banana", ":banana:")
         val actualIntro = IntroFactory.fromMap(mapOf(
             "discordId" to "22",
             "name" to "Candi",
             "age" to "3",
             "pronouns" to "she/her",
-            "extra" to "loves banana"
+            "extra" to "loves banana",
+            "icon" to ":banana:"
         ))
         assertEquals(expectedIntro, actualIntro)
     }
@@ -36,7 +37,8 @@ internal class IntroFactoryTestCase {
         every { resultSet.getString("age") } returns "1"
         every { resultSet.getString("pronouns") } returns null
         every { resultSet.getString("extra") } returns "pwes!"
-        val expectedIntros = listOf(Intro("1", "Oliver", "1", extra = "pwes!"))
+        every { resultSet.getString("icon") } returns ":carrot:"
+        val expectedIntros = listOf(Intro("1", "Oliver", "1", extra = "pwes!", icon = ":carrot:"))
         val actualIntros = IntroFactory.fromResultSet(resultSet)
         assertEquals(expectedIntros, actualIntros)
     }

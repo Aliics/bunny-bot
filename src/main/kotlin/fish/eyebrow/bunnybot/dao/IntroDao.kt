@@ -21,6 +21,7 @@ class IntroDao(private val dbConnection: Connection) {
             setString(3, intro.age)
             setString(4, intro.pronouns)
             setString(5, intro.extra)
+            setString(6, intro.icon)
             executeUpdate()
         }
     }
@@ -31,7 +32,8 @@ class IntroDao(private val dbConnection: Connection) {
             setString(2, intro.age)
             setString(3, intro.pronouns)
             setString(4, intro.extra)
-            setString(5, intro.discordId)
+            setString(5, intro.icon)
+            setString(6, intro.discordId)
             executeUpdate()
         }
     }

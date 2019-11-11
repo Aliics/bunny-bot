@@ -37,10 +37,11 @@ class WhoIsHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
     }
 
     private fun sendResponse(intro: Intro, message: Message) {
-        val nameField = "name: ${intro.name}"
-        val ageField = "age: ${intro.age}"
-        val pronounsField = "pronouns: ${intro.pronouns}"
-        val extraField = "extra: ${intro.extra}"
+        val iconPrefix = if (intro.icon != null) "${intro.icon} " else ""
+        val nameField = "${iconPrefix}name: ${intro.name}"
+        val ageField = "${iconPrefix}age: ${intro.age}"
+        val pronounsField = "${iconPrefix}pronouns: ${intro.pronouns}"
+        val extraField = "${iconPrefix}extra: ${intro.extra}"
         message.new("$nameField\n$ageField\n$pronounsField\n$extraField")
     }
 
