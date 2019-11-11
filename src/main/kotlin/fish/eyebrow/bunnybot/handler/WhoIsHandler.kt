@@ -27,7 +27,7 @@ class WhoIsHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
                         message.new("Uh oh! $mention has no intro yet!")
                         return@forEach
                     }
-                    sendResponse(intros.first(), message)
+                    sendResponse(intros.first(), message, mention)
                 } catch (e: Exception) {
                     message.new(DiscordClientWrapper.INTERNAL_ERROR_MESSAGE)
                     logger.error("An exception occurred when handling !whois:", e)
@@ -36,13 +36,13 @@ class WhoIsHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
         }
     }
 
-    private fun sendResponse(intro: Intro, message: Message) {
+    private fun sendResponse(intro: Intro, message: Message, mention: String?) {
         val iconPrefix = if (intro.icon != null) "${intro.icon} " else ""
         val nameField = "${iconPrefix}name: ${intro.name}"
         val ageField = "${iconPrefix}age: ${intro.age}"
         val pronounsField = "${iconPrefix}pronouns: ${intro.pronouns}"
         val extraField = "${iconPrefix}extra: ${intro.extra}"
-        message.new("$nameField\n$ageField\n$pronounsField\n$extraField")
+        message.new("$mention\n$nameField\n$ageField\n$pronounsField\n$extraField")
     }
 
     private fun Message.new(content: String) = channel.block()?.createMessage(content)?.block()

@@ -77,10 +77,13 @@ internal class WhoIsHandlerTestCase {
             extra = "i loves bunnies",
             icon = ":heart:"
         )
+        val expectedMention = "<@${expectedIntro.discordId}>"
+        every { member.mention } returns expectedMention
         givenExpectedInPostgres(expectedIntro)
         whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedIntro.discordId)))
         verify { messageChannel.createMessage(capture(slot)) }
         val actualMessage = slot.captured
+        assertTrue(actualMessage.contains(expectedMention))
         assertTrue(actualMessage.contains(":heart: name: ${expectedIntro.name}"))
         assertTrue(actualMessage.contains(":heart: age: ${expectedIntro.age}"))
         assertTrue(actualMessage.contains(":heart: pronouns: ${expectedIntro.pronouns}"))
@@ -91,10 +94,13 @@ internal class WhoIsHandlerTestCase {
     internal fun `should only respond with nulled out fields when intro does not contain fields`() {
         val slot = slot<String>()
         val expectedIntro = Intro(discordId = "2839182", name = "Alfred", age = "1029")
+        val expectedMention = "<@${expectedIntro.discordId}>"
+        every { member.mention } returns expectedMention
         givenExpectedInPostgres(expectedIntro)
         whenMessageEventIsCapturedWithSetOfMentions(setOf(Snowflake.of(expectedIntro.discordId)))
         verify { messageChannel.createMessage(capture(slot)) }
         val actualMessage = slot.captured
+        assertTrue(actualMessage.contains(expectedMention))
         assertTrue(actualMessage.contains("name: ${expectedIntro.name}"))
         assertTrue(actualMessage.contains("age: ${expectedIntro.age}"))
         assertTrue(actualMessage.contains("pronouns: null"))
