@@ -24,7 +24,7 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
         message.content.ifPresent { content ->
             try {
                 val discordId = message.author.get().id.asString()
-                val intro = setupIntroFieldMap(discordId, content)
+                val intro = collectIntroFromMessageContent(discordId, content)
                 upsertIntroWithMessage(intro, message)
             } catch (e: NoSuchElementException) {
                 message.new("$HUMOURING_PROMPT\n$FORMAT_OF_INTRO_HEADER\n$FORMAT_OF_INTRO")
@@ -35,8 +35,8 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
         }
     }
 
-    private fun setupIntroFieldMap(discordId: String, content: String): Intro {
-        return Intro.fromMap(mutableMapOf(DiscordClientWrapper.DISCORD_ID_KEY to discordId).let { introMap ->
+    private fun collectIntroFromMessageContent(discordId: String, content: String): Intro {
+        val internalIntroMap = mutableMapOf(DiscordClientWrapper.DISCORD_ID_KEY to discordId).let { introMap ->
             val introParamMap = content.removePrefix(DiscordClientWrapper.INTRO_COMMAND)
                 .trimStart()
                 .split(commaRegex)
@@ -46,7 +46,8 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
                     return@associate key to value
                 }
             return@let if (introParamMap.isNotEmpty()) introMap.apply { putAll(introParamMap) } else emptyMap<String, String>()
-        })
+        }
+        return Intro.fromMap(internalIntroMap)
     }
 
     private fun upsertIntroWithMessage(intro: Intro, message: Message) {

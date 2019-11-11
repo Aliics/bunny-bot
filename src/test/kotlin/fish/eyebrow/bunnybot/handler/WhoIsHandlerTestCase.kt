@@ -120,7 +120,6 @@ internal class WhoIsHandlerTestCase {
         h2Connection.createStatement().executeUpdate(collectFilePathData("delete_intro_table.sql"))
     }
 
-    @Suppress("SameParameterValue")
     private fun givenExpectedInPostgres(intro: Intro) {
         h2Connection.prepareStatement(collectFilePathData("insert_intro_data.sql")).apply {
             setString(1, intro.discordId)

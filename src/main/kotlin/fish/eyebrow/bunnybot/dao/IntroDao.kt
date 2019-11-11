@@ -13,33 +13,34 @@ class IntroDao(private val dbConnection: Connection) {
 
     }
 
-    fun insertIntro(introMap: Intro) {
+    fun insertIntro(intro: Intro) {
         prepareScrollableStatement(INSERT_INTRO_DATA_SQL).apply {
-            setString(1, introMap.discordId)
-            setString(2, introMap.name)
-            setString(3, introMap.age)
-            setString(4, introMap.pronouns)
-            setString(5, introMap.extra)
+            setString(1, intro.discordId)
+            setString(2, intro.name)
+            setString(3, intro.age)
+            setString(4, intro.pronouns)
+            setString(5, intro.extra)
             executeUpdate()
         }
     }
 
-    fun updateIntro(introMap: Intro) {
+    fun updateIntro(intro: Intro) {
         prepareScrollableStatement(UPDATE_INTRO_DATA_SQL).apply {
-            setString(1, introMap.name)
-            setString(2, introMap.age)
-            setString(3, introMap.pronouns)
-            setString(4, introMap.extra)
-            setString(5, introMap.discordId)
+            setString(1, intro.name)
+            setString(2, intro.age)
+            setString(3, intro.pronouns)
+            setString(4, intro.extra)
+            setString(5, intro.discordId)
             executeUpdate()
         }
     }
 
     fun findIntroWithDiscordId(discordId: String?): List<Intro> {
-        return Intro.fromResultSet(prepareScrollableStatement(QUERY_INTRO_DATA_WITH_DISCORD_ID_SQL).run {
+        val internalIntroResultSet = prepareScrollableStatement(QUERY_INTRO_DATA_WITH_DISCORD_ID_SQL).run {
             setString(1, discordId)
             return@run executeQuery()
-        })
+        }
+        return Intro.fromResultSet(internalIntroResultSet)
     }
 
     private fun prepareScrollableStatement(sqlResource: String) =

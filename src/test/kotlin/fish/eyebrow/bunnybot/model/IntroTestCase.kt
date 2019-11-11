@@ -40,4 +40,13 @@ internal class IntroTestCase {
         val actualIntros = Intro.fromResultSet(resultSet)
         assertEquals(expectedIntros, actualIntros)
     }
+
+    @Test
+    internal fun `should return an empty map with no results`() {
+        val resultSet = mockk<ResultSet>()
+        every { resultSet.next() } returns false
+        val expectedIntros = emptyList<Intro>()
+        val actualIntros = Intro.fromResultSet(resultSet)
+        assertEquals(expectedIntros, actualIntros)
+    }
 }
