@@ -1,6 +1,7 @@
 package fish.eyebrow.bunnybot.dao
 
 import fish.eyebrow.bunnybot.model.Intro
+import fish.eyebrow.bunnybot.model.IntroFactory
 import fish.eyebrow.bunnybot.util.collectFilePathData
 import java.sql.Connection
 import java.sql.ResultSet
@@ -40,7 +41,7 @@ class IntroDao(private val dbConnection: Connection) {
             setString(1, discordId)
             return@run executeQuery()
         }
-        return Intro.fromResultSet(internalIntroResultSet)
+        return IntroFactory.fromResultSet(internalIntroResultSet)
     }
 
     private fun prepareScrollableStatement(sqlResource: String) =

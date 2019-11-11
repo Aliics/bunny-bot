@@ -8,6 +8,7 @@ import discord4j.core.`object`.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent
 import fish.eyebrow.bunnybot.dao.IntroDao
 import fish.eyebrow.bunnybot.model.Intro
+import fish.eyebrow.bunnybot.model.IntroFactory
 import fish.eyebrow.bunnybot.util.collectFilePathData
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -64,7 +65,7 @@ internal class IntroHandlerTestCase {
             messageContent = "!intro name=${expectedIntro.name},age=${expectedIntro.age},pronouns=${expectedIntro.pronouns},extra=${expectedIntro.extra}"
         )
         val actualResultSet = getIntroTableResultSet()
-        val actualIntro = Intro.fromResultSet(actualResultSet).first()
+        val actualIntro = IntroFactory.fromResultSet(actualResultSet).first()
         assertEquals(expectedIntro, actualIntro)
         verify { messageChannel.createMessage("Great! I've got that all setup for you, Alexander! :smile:") }
     }
@@ -74,7 +75,7 @@ internal class IntroHandlerTestCase {
         val expectedIntro = Intro("88820", "Alfred", "44")
         whenHandlerIsInvokedAsAuthorWithMessage(expectedIntro.discordId, "!intro name=${expectedIntro.name},age=${expectedIntro.age}")
         val actualResultSet = getIntroTableResultSet()
-        val actualIntro = Intro.fromResultSet(actualResultSet).first()
+        val actualIntro = IntroFactory.fromResultSet(actualResultSet).first()
         assertEquals(expectedIntro, actualIntro)
         verify { messageChannel.createMessage("Great! I've got that all setup for you, Alfred! :smile:") }
     }
@@ -98,7 +99,7 @@ internal class IntroHandlerTestCase {
             "!intro name=${expectedIntro.name},age=${expectedIntro.age},extra=${expectedIntro.extra}"
         )
         val actualResultSet = getIntroTableResultSet()
-        val actualIntro = Intro.fromResultSet(actualResultSet).first()
+        val actualIntro = IntroFactory.fromResultSet(actualResultSet).first()
         assertEquals(expectedIntro, actualIntro)
         verify { messageChannel.createMessage("Awesome! I've overwritten your previous intro, Oliver! :smile:") }
     }

@@ -4,6 +4,7 @@ import discord4j.core.`object`.entity.Message
 import discord4j.core.event.domain.message.MessageCreateEvent
 import fish.eyebrow.bunnybot.dao.IntroDao
 import fish.eyebrow.bunnybot.model.Intro
+import fish.eyebrow.bunnybot.model.IntroFactory
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.function.Consumer
@@ -47,7 +48,7 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
                 }
             return@let if (introParamMap.isNotEmpty()) introMap.apply { putAll(introParamMap) } else emptyMap<String, String>()
         }
-        return Intro.fromMap(internalIntroMap)
+        return IntroFactory.fromMap(internalIntroMap)
     }
 
     private fun upsertIntroWithMessage(intro: Intro, message: Message) {

@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import java.sql.ResultSet
 
-internal class IntroTestCase {
+internal class IntroFactoryTestCase {
     @Test
     internal fun `should initialize from map when all fields present`() {
         val expectedIntro = Intro("22", "Candi", "3", "she/her", "loves banana")
-        val actualIntro = Intro.fromMap(mapOf(
+        val actualIntro = IntroFactory.fromMap(mapOf(
             "discordId" to "22",
             "name" to "Candi",
             "age" to "3",
@@ -23,7 +23,7 @@ internal class IntroTestCase {
 
     @Test
     internal fun `should throw when required fields are missing`() {
-        assertThrows(NoSuchElementException::class.java) { Intro.fromMap(emptyMap()) }
+        assertThrows(NoSuchElementException::class.java) { IntroFactory.fromMap(emptyMap()) }
     }
 
     @Test
@@ -37,7 +37,7 @@ internal class IntroTestCase {
         every { resultSet.getString("pronouns") } returns null
         every { resultSet.getString("extra") } returns "pwes!"
         val expectedIntros = listOf(Intro("1", "Oliver", "1", extra = "pwes!"))
-        val actualIntros = Intro.fromResultSet(resultSet)
+        val actualIntros = IntroFactory.fromResultSet(resultSet)
         assertEquals(expectedIntros, actualIntros)
     }
 
@@ -46,7 +46,7 @@ internal class IntroTestCase {
         val resultSet = mockk<ResultSet>()
         every { resultSet.next() } returns false
         val expectedIntros = emptyList<Intro>()
-        val actualIntros = Intro.fromResultSet(resultSet)
+        val actualIntros = IntroFactory.fromResultSet(resultSet)
         assertEquals(expectedIntros, actualIntros)
     }
 }
