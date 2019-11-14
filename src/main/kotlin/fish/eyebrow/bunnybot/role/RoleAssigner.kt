@@ -15,7 +15,7 @@ object RoleAssigner {
                 else -> false
             }
             if (shouldAssign) {
-                message.authorAsMember.block()?.addRole(role.id)
+                message.authorAsMember.block()?.addRole(role.id)?.block()
                 message.channel.block()?.createMessage("You've also been assigned to the _${role.name}_ role!")?.block()
             }
         }
