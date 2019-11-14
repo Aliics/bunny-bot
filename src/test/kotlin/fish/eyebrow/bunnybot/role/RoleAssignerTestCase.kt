@@ -1,10 +1,11 @@
-package fish.eyebrow.bunnybot.handler
+package fish.eyebrow.bunnybot.role
 
 import discord4j.core.`object`.entity.Guild
 import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.Role
 import discord4j.core.`object`.util.Snowflake
+import fish.eyebrow.bunnybot.role.RoleAssigner
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension

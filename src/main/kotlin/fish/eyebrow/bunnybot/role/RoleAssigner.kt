@@ -1,4 +1,4 @@
-package fish.eyebrow.bunnybot.handler
+package fish.eyebrow.bunnybot.role
 
 import discord4j.core.`object`.entity.Message
 
@@ -23,10 +23,4 @@ object RoleAssigner {
     } catch (e: Exception) {
         AgeGroup.values().find { ageGroup -> ageGroup.name == age.toUpperCase() } ?: AgeGroup.UNKNOWN
     }
-}
-
-enum class AgeGroup {
-    ADULT,
-    MINOR,
-    UNKNOWN
 }
