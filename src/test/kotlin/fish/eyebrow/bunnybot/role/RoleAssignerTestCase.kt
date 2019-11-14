@@ -3,9 +3,9 @@ package fish.eyebrow.bunnybot.role
 import discord4j.core.`object`.entity.Guild
 import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.Message
+import discord4j.core.`object`.entity.MessageChannel
 import discord4j.core.`object`.entity.Role
 import discord4j.core.`object`.util.Snowflake
-import fish.eyebrow.bunnybot.role.RoleAssigner
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -25,12 +25,16 @@ internal class RoleAssignerTestCase {
     @MockK
     private lateinit var guild: Guild
     @MockK
+    private lateinit var messageChannel: MessageChannel
+    @MockK
     private lateinit var role: Role
 
     @BeforeEach
     internal fun setUp() {
         every { message.authorAsMember } returns Mono.just(member)
         every { message.guild } returns Mono.just(guild)
+        every { message.channel } returns Mono.just(messageChannel)
+        every { messageChannel.createMessage(any<String>()) } returns Mono.empty()
         every { guild.roles } returns Flux.fromArray(arrayOf(role))
     }
 
@@ -41,6 +45,7 @@ internal class RoleAssignerTestCase {
         every { member.addRole(any()) } returns Mono.empty()
         RoleAssigner.assignAge("20", message)
         verify { member.addRole(roleId) }
+        verify { messageChannel.createMessage("You've also been assigned to the _bunnies_ role!") }
     }
 
     @Test
@@ -50,6 +55,7 @@ internal class RoleAssignerTestCase {
         every { member.addRole(any()) } returns Mono.empty()
         RoleAssigner.assignAge("15", message)
         verify { member.addRole(roleId) }
+        verify { messageChannel.createMessage("You've also been assigned to the _lil bunnies_ role!") }
     }
 
     @Test
@@ -59,6 +65,7 @@ internal class RoleAssignerTestCase {
         every { member.addRole(any()) } returns Mono.empty()
         RoleAssigner.assignAge("adult", message)
         verify { member.addRole(roleId) }
+        verify { messageChannel.createMessage("You've also been assigned to the _bunnies_ role!") }
     }
 
     @Test
@@ -68,6 +75,7 @@ internal class RoleAssignerTestCase {
         every { member.addRole(any()) } returns Mono.empty()
         RoleAssigner.assignAge("minor", message)
         verify { member.addRole(roleId) }
+        verify { messageChannel.createMessage("You've also been assigned to the _lil bunnies_ role!") }
     }
 
     @Test
@@ -77,6 +85,7 @@ internal class RoleAssignerTestCase {
         every { member.addRole(any()) } returns Mono.empty()
         RoleAssigner.assignAge("m1n0r", message)
         verify(exactly = 0) { member.addRole(roleId) }
+        verify(exactly = 0) { messageChannel.createMessage(any<String>()) }
     }
 
     private fun givenRoleOfNameAndId(name: String, id: Snowflake) {

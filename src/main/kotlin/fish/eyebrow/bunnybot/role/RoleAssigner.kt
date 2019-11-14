@@ -14,7 +14,10 @@ object RoleAssigner {
                 MINOR_ROLE_NAME -> ageGroup == AgeGroup.MINOR
                 else -> false
             }
-            if (shouldAssign) message.authorAsMember.block()?.addRole(role.id)
+            if (shouldAssign) {
+                message.authorAsMember.block()?.addRole(role.id)
+                message.channel.block()?.createMessage("You've also been assigned to the _${role.name}_ role!")?.block()
+            }
         }
     }
 
