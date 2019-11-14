@@ -5,6 +5,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import fish.eyebrow.bunnybot.dao.IntroDao
 import fish.eyebrow.bunnybot.model.Intro
 import fish.eyebrow.bunnybot.model.IntroFactory
+import fish.eyebrow.bunnybot.role.RoleAssigner
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.function.Consumer
@@ -27,6 +28,7 @@ class IntroHandler(private val introDao: IntroDao) : Consumer<MessageCreateEvent
                 val discordId = message.author.get().id.asString()
                 val intro = collectIntroFromMessageContent(discordId, content)
                 upsertIntroWithMessage(intro, message)
+                RoleAssigner.assignAge(intro.age, message)
             } catch (e: NoSuchElementException) {
                 message.new("$HUMOURING_PROMPT\n$FORMAT_OF_INTRO_HEADER\n$FORMAT_OF_INTRO")
             } catch (e: Exception) {
